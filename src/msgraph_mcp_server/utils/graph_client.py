@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional
 
 from msgraph import GraphServiceClient
 
-from auth.graph_auth import GraphAuthManager
+from ..auth.graph_auth import GraphAuthManager
 
 class GraphClient:
     """Core client utility for Microsoft Graph API interactions.

@@ -229,6 +229,63 @@ See the `groups.py` docstrings for more details on supported fields and behavior
 
 ## Advanced: Using with Claude or Cursor
 
+### Install from PyPI and run via `uvx`
+
+Once the package has been published to PyPI you can run the server
+directly with [`uvx`](https://docs.astral.sh/uv/) — no repo clone,
+`--with` list, or file path required:
+
+```bash
+uvx entraid-mcp-server
+```
+
+Pin a specific version with either form:
+
+```bash
+uvx entraid-mcp-server@0.2.0
+uvx --from "entraid-mcp-server==0.2.0" entraid-mcp-server
+```
+
+Equivalent `mcp.json` entry (Cursor / Claude Desktop):
+
+```json
+{
+  "EntraID MCP Server": {
+    "command": "uvx",
+    "args": ["entraid-mcp-server"]
+  }
+}
+```
+
+Authentication still defaults to `DefaultAzureCredential`, so `az login`
+is enough for local use; add an `env` block with `TENANT_ID` /
+`CLIENT_ID` / `CLIENT_SECRET` only if you need non-interactive auth.
+
+### Building and publishing the package
+
+From the repo root:
+
+```bash
+uv build                     # produces dist/*.whl and dist/*.tar.gz
+uvx --from ./dist/entraid_mcp_server-<version>-py3-none-any.whl \
+    entraid-mcp-server       # local smoke test
+```
+
+Upload to PyPI (create an API token at https://pypi.org first):
+
+```bash
+# optional dry run against TestPyPI
+uv publish --publish-url https://test.pypi.org/legacy/ --token <test-token>
+
+# real release
+uv publish --token <pypi-token>
+```
+
+For a hands-off release flow, configure
+[PyPI Trusted Publishing (OIDC)](https://docs.pypi.org/trusted-publishers/)
+and add a GitHub Actions workflow that runs `uv build` + `uv publish`
+on every tag push — no long-lived tokens required.
+
 ### Using with Claude (Anthropic)
 To install and run this server as a Claude MCP tool, use:
 

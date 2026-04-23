@@ -5,7 +5,7 @@ This module provides access to Microsoft Graph application resources (app regist
 
 import logging
 from typing import Dict, List, Any, Optional
-from utils.graph_client import GraphClient
+from ..utils.graph_client import GraphClient
 from msgraph.generated.models.application import Application
 from .service_principals import get_service_principal_by_app_id
 

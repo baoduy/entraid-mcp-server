@@ -10,7 +10,7 @@ from datetime import datetime, timedelta, timezone
 from msgraph.generated.audit_logs.sign_ins.sign_ins_request_builder import SignInsRequestBuilder
 from kiota_abstractions.base_request_configuration import RequestConfiguration
 
-from utils.graph_client import GraphClient
+from ..utils.graph_client import GraphClient
 
 logger = logging.getLogger(__name__)
 

@@ -6,7 +6,7 @@ This module provides access to Microsoft Graph conditional access policy resourc
 import logging
 from typing import Dict, List, Any
 from msgraph.generated.identity.conditional_access.policies.policies_request_builder import PoliciesRequestBuilder
-from utils.graph_client import GraphClient
+from ..utils.graph_client import GraphClient
 
 logger = logging.getLogger(__name__)
 

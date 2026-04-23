@@ -1,7 +1,7 @@
 import logging
 from typing import Dict, List, Any, Optional
 from kiota_abstractions.base_request_configuration import RequestConfiguration
-from utils.graph_client import GraphClient
+from ..utils.graph_client import GraphClient
 from msgraph.generated.models.user import User
 from msgraph.generated.models.password_profile import PasswordProfile
 
