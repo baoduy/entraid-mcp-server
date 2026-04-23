@@ -1,0 +1,38 @@
+name: Publish entraid-mcp-server
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+    paths:
+      - 'src/msgraph_mcp_server/**'
+      - 'pyproject.toml'
+      - 'README.md'
+      - 'LICENSE'
+      - '.github/workflows/publish-entraid-mcp-server.yml'
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v2
+        with:
+          version: latest
+
+      - name: Build package
+        run: uv build
+
+      - name: Publish to PyPI
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        run: uv publish

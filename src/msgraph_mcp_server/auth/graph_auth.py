@@ -1,298 +1,182 @@
 """Microsoft Graph authentication module.
 
-This module provides authentication functionality for the Microsoft Graph API
-using Azure Identity credentials.
+This module provides authentication for the Microsoft Graph API using
+Azure Identity credentials.
+
+By default the server uses :class:`azure.identity.DefaultAzureCredential`,
+which automatically picks up the developer's current Azure login context
+(``az login``/``azd auth login``, Visual Studio / VS Code, environment
+variables, managed identity, workload identity, etc.). This means no
+client id / tenant id / secret configuration is required for normal
+interactive development.
+
+For non-interactive / CI scenarios the manager still supports explicit
+client-secret or certificate credentials when the relevant environment
+variables (or constructor arguments) are provided.
 """
 
-import os
+from __future__ import annotations
+
 import logging
+import os
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Any
+from typing import List, Optional
+
+from azure.core.credentials import TokenCredential
+from azure.identity import (
+    CertificateCredential,
+    ClientSecretCredential,
+    DefaultAzureCredential,
+)
 from dotenv import load_dotenv
-from azure.identity import ClientSecretCredential, CertificateCredential
 from msgraph import GraphServiceClient
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# Try to load environment variables from multiple possible locations
-env_paths = [
-    # Project root config directory
-    Path(__file__).parent.parent.parent / "config" / ".env",
-    # Current working directory config
-    Path.cwd() / "config" / ".env",
-    # User's home directory
-    Path.home() / ".entraid" / ".env",
-    # System-wide config
-    Path("/etc/entraid/.env")
-]
+# Default scope for Microsoft Graph when using a TokenCredential.
+DEFAULT_GRAPH_SCOPES: List[str] = ["https://graph.microsoft.com/.default"]
 
-env_loaded = False
-for env_path in env_paths:
-    if env_path.exists():
-        load_dotenv(env_path)
-        logger.info(f"Loaded environment variables from {env_path}")
-        env_loaded = True
-        break
 
-if not env_loaded:
-    logger.warning("No .env file found in any of the expected locations")
+def _load_env_files() -> None:
+    """Load the first ``.env`` file found in the well-known locations.
+
+    This is best-effort: if no file is found the caller's process
+    environment is used as-is (which is the expected path when running
+    under ``az login`` with no secrets).
+    """
+    candidates = [
+        Path(__file__).resolve().parent.parent.parent.parent / "config" / ".env",
+        Path.cwd() / "config" / ".env",
+        Path.home() / ".entraid" / ".env",
+        Path("/etc/entraid/.env"),
+    ]
+    for path in candidates:
+        try:
+            if path.is_file():
+                load_dotenv(path, override=False)
+                logger.info("Loaded environment variables from %s", path)
+                return
+        except OSError:
+            # Unreadable path – just skip it.
+            continue
+    logger.debug("No .env file found; relying on the current process environment")
+
+
+# Load env files once at import time so subclasses/consumers see the values.
+_load_env_files()
+
 
 class AuthenticationError(Exception):
-    """Custom exception for authentication errors"""
-    pass
+    """Raised when Microsoft Graph authentication cannot be configured."""
+
 
 class GraphAuthManager:
-    """Authentication manager for Microsoft Graph API."""
-    
+    """Build an authenticated :class:`GraphServiceClient`.
+
+    Resolution order:
+
+    1. An explicit :class:`~azure.core.credentials.TokenCredential` passed
+       via ``credential``.
+    2. Client-secret credential if ``tenant_id``/``client_id``/``client_secret``
+       are all supplied (or available via ``TENANT_ID``/``CLIENT_ID``/
+       ``CLIENT_SECRET`` environment variables).
+    3. Certificate credential if ``tenant_id``/``client_id``/
+       ``certificate_path`` are all supplied (with an optional password).
+    4. :class:`~azure.identity.DefaultAzureCredential` – the preferred
+       default which leverages the developer's current Azure login.
+    """
+
     def __init__(
         self,
+        *,
+        credential: Optional[TokenCredential] = None,
         tenant_id: Optional[str] = None,
         client_id: Optional[str] = None,
         client_secret: Optional[str] = None,
         certificate_path: Optional[str] = None,
-        certificate_pwd: Optional[str] = None,
-        scopes: Optional[List[str]] = None
-    ):
-        """Initialize the GraphAuthManager.
-        
-        Args:
-            tenant_id: Azure tenant ID
-            client_id: Azure application client ID
-            client_secret: Azure application client secret
-            certificate_path: Path to certificate file
-            certificate_pwd: Certificate password
-            scopes: List of Microsoft Graph API scopes to request
-        """
-        # Try to get credentials from parameters first, then environment
-        self.tenant_id = tenant_id or os.environ.get("TENANT_ID")
-        self.client_id = client_id or os.environ.get("CLIENT_ID")
-        self.client_secret = client_secret or os.environ.get("CLIENT_SECRET")
-        self.certificate_path = certificate_path or os.environ.get("CERTIFICATE_PATH")
-        self.certificate_pwd = certificate_pwd or os.environ.get("CERTIFICATE_PWD")
-        self.scopes = scopes or ["https://graph.microsoft.com/.default"]
-        self._graph_client = None
-        
-        # Log the state of credentials (without exposing sensitive data)
-        logger.info("Initializing GraphAuthManager with credentials:")
-        logger.info(f"TENANT_ID: {'Set' if self.tenant_id else 'Not set'}")
-        logger.info(f"CLIENT_ID: {'Set' if self.client_id else 'Not set'}")
-        logger.info(f"CLIENT_SECRET: {'Set' if self.client_secret else 'Not set'}")
-        
-        # Validate credentials
-        self._validate_credentials()
-    
-    def _validate_credentials(self):
-        """Validate that all required credentials are present."""
-        missing = []
-        if not self.tenant_id:
-            missing.append("tenant_id")
-        if not self.client_id:
-            missing.append("client_id")
-        if not self.client_secret:
-            missing.append("client_secret")
-            
-        if missing:
-            error_msg = f"Missing required credentials: {', '.join(missing)}"
-            logger.error(error_msg)
-            raise AuthenticationError(error_msg)
-    
-    def get_auth_method(self) -> str:
-        """Determine the authentication method to use."""
-        if self.certificate_path and self.certificate_pwd:
-            return 'certificate'
-        elif self.client_secret:
-            return 'client_secret'
-        else:
-            # Try to determine from environment
-            if os.environ.get("CERTIFICATE_PWD"):
-                return 'certificate'
-            else:
-                return 'client_secret'
-    
-    def get_auth_params(self) -> Dict[str, str]:
-        """Get authentication parameters."""
-        params = {
-            'client_id': self.client_id,
-            'tenant_id': self.tenant_id
-        }
-        
-        auth_method = self.get_auth_method()
-        if auth_method == 'certificate':
-            params['certificate_path'] = self.certificate_path
-            params['certificate_pwd'] = self.certificate_pwd
-        elif auth_method == 'client_secret':
-            params['client_secret'] = self.client_secret
-        
-        return params
-    
-    def get_graph_client(self) -> GraphServiceClient:
-        """Get a Microsoft Graph client.
-        
-        Returns:
-            GraphServiceClient: Authenticated Microsoft Graph client
-            
-        Raises:
-            AuthenticationError: If authentication fails or required parameters are missing
-        """
-        if self._graph_client:
-            return self._graph_client
-            
-        try:
-            credential = ClientSecretCredential(
+        certificate_password: Optional[str] = None,
+        scopes: Optional[List[str]] = None,
+    ) -> None:
+        self._explicit_credential = credential
+
+        self.tenant_id = tenant_id or os.environ.get("TENANT_ID") or os.environ.get("AZURE_TENANT_ID")
+        self.client_id = client_id or os.environ.get("CLIENT_ID") or os.environ.get("AZURE_CLIENT_ID")
+        self.client_secret = (
+            client_secret or os.environ.get("CLIENT_SECRET") or os.environ.get("AZURE_CLIENT_SECRET")
+        )
+        self.certificate_path = (
+            certificate_path
+            or os.environ.get("CERTIFICATE_PATH")
+            or os.environ.get("AZURE_CLIENT_CERTIFICATE_PATH")
+        )
+        self.certificate_password = (
+            certificate_password
+            or os.environ.get("CERTIFICATE_PWD")
+            or os.environ.get("AZURE_CLIENT_CERTIFICATE_PASSWORD")
+        )
+
+        self.scopes = scopes or list(DEFAULT_GRAPH_SCOPES)
+        self._graph_client: Optional[GraphServiceClient] = None
+        self._credential: Optional[TokenCredential] = None
+
+    # ------------------------------------------------------------------
+    # Credential selection
+    # ------------------------------------------------------------------
+    def _build_credential(self) -> TokenCredential:
+        if self._explicit_credential is not None:
+            logger.info("Using caller-supplied TokenCredential")
+            return self._explicit_credential
+
+        if self.tenant_id and self.client_id and self.client_secret:
+            logger.info("Using ClientSecretCredential (tenant_id/client_id/client_secret)")
+            return ClientSecretCredential(
                 tenant_id=self.tenant_id,
                 client_id=self.client_id,
-                client_secret=self.client_secret
+                client_secret=self.client_secret,
             )
-            
+
+        if self.tenant_id and self.client_id and self.certificate_path:
+            logger.info("Using CertificateCredential (tenant_id/client_id/certificate_path)")
+            return CertificateCredential(
+                tenant_id=self.tenant_id,
+                client_id=self.client_id,
+                certificate_path=self.certificate_path,
+                password=self.certificate_password,
+            )
+
+        logger.info(
+            "Using DefaultAzureCredential – falling back to the current Azure login context"
+        )
+        try:
+            return DefaultAzureCredential()
+        except Exception as exc:  # pragma: no cover - defensive
+            raise AuthenticationError(
+                f"Failed to initialise DefaultAzureCredential: {exc}"
+            ) from exc
+
+    def get_credential(self) -> TokenCredential:
+        """Return (and cache) the underlying :class:`TokenCredential`."""
+        if self._credential is None:
+            self._credential = self._build_credential()
+        return self._credential
+
+    # ------------------------------------------------------------------
+    # Graph client
+    # ------------------------------------------------------------------
+    def get_graph_client(self) -> GraphServiceClient:
+        """Return (and cache) an authenticated :class:`GraphServiceClient`."""
+        if self._graph_client is not None:
+            return self._graph_client
+
+        try:
+            credential = self.get_credential()
             self._graph_client = GraphServiceClient(
                 credentials=credential,
-                scopes=self.scopes
+                scopes=self.scopes,
             )
-            logger.info("Successfully created Graph client")
+            logger.info("Successfully created Microsoft Graph client")
             return self._graph_client
-            
-        except Exception as e:
-            error_msg = f"Failed to create Graph client: {str(e)}"
-            logger.error(error_msg)
-            raise AuthenticationError(error_msg)
-    
-    def get_auth_params_from_env(self) -> Tuple[Dict[str, Any], str]:
-        """
-        Get authentication parameters from environment variables.
-        Supports both local .env and pipeline certificate authentication.
-        
-        Returns:
-            Tuple of (params dict, auth_method)
-        """
-        params = {}
-        
-        # Get common parameters
-        params['client_id'] = os.environ.get('CLIENT_ID')
-        params['tenant_id'] = os.environ.get('TENANT_ID')
-        
-        # Check for certificate authentication (Pipeline)
-        if os.environ.get('CERTIFICATE_PWD'):
-            params['certificate_path'] = os.path.join(os.environ.get('AGENT_TEMPDIRECTORY', ''), 
-                                                  os.environ.get('CERT_NAME', ''))
-            params['certificate_pwd'] = os.environ.get('CERTIFICATE_PWD')
-            return params, 'certificate'
-        
-        # Check for client secret authentication (Local)
-        elif os.environ.get('CLIENT_SECRET'):
-            params['client_secret'] = os.environ.get('CLIENT_SECRET')
-            return params, 'client_secret'
-        
-        raise AuthenticationError("No valid authentication parameters found in environment")
-
-def get_graph_client(auth_method=None, **kwargs):
-    """
-    Get a Microsoft Graph client using either certificate or client secret authentication.
-    
-    Args:
-        auth_method (str): Either 'certificate' or 'client_secret'. If None, will try to determine from environment.
-        **kwargs: Additional arguments for authentication:
-            - For certificate: client_id, tenant_id, certificate_path, certificate_pwd
-            - For client secret: client_id, tenant_id, client_secret
-    
-    Returns:
-        GraphServiceClient: Authenticated Microsoft Graph client
-    
-    Raises:
-        AuthenticationError: If authentication fails or required parameters are missing
-    """
-    try:
-        # If auth_method is not specified, try to determine from environment
-        if auth_method is None:
-            # Check if we're in a pipeline environment (certificate auth)
-            if os.environ.get('CERTIFICATE_PWD'):
-                auth_method = 'certificate'
-            else:
-                # Try to load from .env file
-                load_dotenv()
-                if os.environ.get('CLIENT_SECRET'):
-                    auth_method = 'client_secret'
-                else:
-                    raise AuthenticationError("Could not determine authentication method. Please specify auth_method or set up environment variables.")
-
-        # Set up logging
-        logging.info(f"Using authentication method: {auth_method}")
-
-        if auth_method == 'certificate':
-            # Certificate authentication (Pipeline)
-            required_params = ['client_id', 'tenant_id', 'certificate_path', 'certificate_pwd']
-            missing_params = [param for param in required_params if param not in kwargs]
-            if missing_params:
-                raise AuthenticationError(f"Missing required parameters for certificate authentication: {', '.join(missing_params)}")
-
-            credential = CertificateCredential(
-                tenant_id=kwargs['tenant_id'],
-                client_id=kwargs['client_id'],
-                certificate_path=kwargs['certificate_path'],
-                password=kwargs['certificate_pwd'],
-                connection_verify=certifi.where()
-            )
-            logging.info("Using certificate-based authentication")
-
-        elif auth_method == 'client_secret':
-            # Client secret authentication (Local development)
-            required_params = ['client_id', 'tenant_id', 'client_secret']
-            missing_params = [param for param in required_params if param not in kwargs]
-            if missing_params:
-                raise AuthenticationError(f"Missing required parameters for client secret authentication: {', '.join(missing_params)}")
-
-            credential = ClientSecretCredential(
-                tenant_id=kwargs['tenant_id'],
-                client_id=kwargs['client_id'],
-                client_secret=kwargs['client_secret'],
-                connection_verify=certifi.where()
-            )
-            logging.info("Using client secret-based authentication")
-
-        else:
-            raise AuthenticationError(f"Invalid authentication method: {auth_method}")
-
-        # Create and return the Graph client
-        scopes = ['https://graph.microsoft.com/.default']
-        client = GraphServiceClient(
-            credentials=credential,
-            scopes=scopes
-        )
-        logging.info("Successfully created Graph client")
-        return client
-
-    except Exception as e:
-        logging.error(f"Authentication failed: {str(e)}")
-        raise AuthenticationError(f"Failed to authenticate: {str(e)}")
-
-def get_auth_params_from_env():
-    """
-    Get authentication parameters from environment variables.
-    Supports both local .env and pipeline certificate authentication.
-    
-    Returns:
-        dict: Dictionary containing authentication parameters
-    """
-    params = {}
-    
-    # Try to load from .env file first
-    load_dotenv()
-    
-    # Get common parameters
-    params['client_id'] = os.environ.get('CLIENT_ID')
-    params['tenant_id'] = os.environ.get('TENANT_ID')
-    
-    # Check for certificate authentication (Pipeline)
-    if os.environ.get('CERTIFICATE_PWD'):
-        params['certificate_path'] = os.path.join(os.environ.get('AGENT_TEMPDIRECTORY', ''), 
-                                               os.environ.get('CERT_NAME', ''))
-        params['certificate_pwd'] = os.environ.get('CERTIFICATE_PWD')
-        return params, 'certificate'
-    
-    # Check for client secret authentication (Local)
-    elif os.environ.get('CLIENT_SECRET'):
-        params['client_secret'] = os.environ.get('CLIENT_SECRET')
-        return params, 'client_secret'
-    
-    raise AuthenticationError("No valid authentication parameters found in environment") 
+        except AuthenticationError:
+            raise
+        except Exception as exc:
+            raise AuthenticationError(f"Failed to create Graph client: {exc}") from exc

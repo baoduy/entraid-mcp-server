@@ -8,10 +8,10 @@ import logging
 from typing import Dict, List, Optional, Any
 from fastmcp import FastMCP, Context
 
-from auth.graph_auth import GraphAuthManager, AuthenticationError
-from utils.graph_client import GraphClient
-from utils.password_generator import generate_secure_password
-from resources import users, signin_logs, mfa, conditional_access, groups, managed_devices, audit_logs, password_auth, permissions_helper, applications, service_principals
+from .auth.graph_auth import GraphAuthManager, AuthenticationError
+from .utils.graph_client import GraphClient
+from .utils.password_generator import generate_secure_password
+from .resources import users, signin_logs, mfa, conditional_access, groups, managed_devices, audit_logs, password_auth, permissions_helper, applications, service_principals
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -927,3 +927,17 @@ async def delete_service_principal(sp_id: str, ctx: Context) -> Dict[str, Any]:
 def get_greeting(name: str) -> str:
     """Get a personalized greeting"""
     return f"Hello, {name}!"
+
+
+def main() -> None:
+    """Console script entrypoint.
+
+    Starts the FastMCP server using the default stdio transport, which is
+    what MCP clients (Claude Desktop, Cursor, etc.) expect when launching
+    the server via ``uvx entraid-mcp-server``.
+    """
+    mcp.run()
+
+
+if __name__ == "__main__":
+    main()

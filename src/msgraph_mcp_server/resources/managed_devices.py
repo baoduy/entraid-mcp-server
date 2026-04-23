@@ -2,7 +2,7 @@ import logging
 from typing import Dict, List, Any, Optional
 from msgraph.generated.device_management.managed_devices.managed_devices_request_builder import ManagedDevicesRequestBuilder
 from kiota_abstractions.base_request_configuration import RequestConfiguration
-from utils.graph_client import GraphClient
+from ..utils.graph_client import GraphClient
 
 logger = logging.getLogger(__name__)
 

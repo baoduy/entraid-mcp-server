@@ -8,7 +8,7 @@ from typing import Dict, List, Any, Optional
 from msgraph.generated.groups.groups_request_builder import GroupsRequestBuilder
 from msgraph.generated.models.group import Group
 from msgraph.generated.models.directory_object import DirectoryObject
-from utils.graph_client import GraphClient
+from ..utils.graph_client import GraphClient
 
 logger = logging.getLogger(__name__)
 

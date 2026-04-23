@@ -5,7 +5,7 @@ This module provides access to Microsoft Graph service principal resources.
 
 import logging
 from typing import Dict, List, Any, Optional
-from utils.graph_client import GraphClient
+from ..utils.graph_client import GraphClient
 from msgraph.generated.models.service_principal import ServicePrincipal
 
 logger = logging.getLogger(__name__)

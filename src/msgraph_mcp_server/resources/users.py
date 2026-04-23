@@ -12,7 +12,7 @@ from msgraph.generated.directory_roles.directory_roles_request_builder import Di
 from msgraph.generated.directory_roles.item.directory_role_item_request_builder import DirectoryRoleItemRequestBuilder
 from msgraph.generated.directory_roles.item.members.members_request_builder import MembersRequestBuilder
 
-from utils.graph_client import GraphClient
+from ..utils.graph_client import GraphClient
 
 logger = logging.getLogger(__name__)
 

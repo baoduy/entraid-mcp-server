@@ -9,7 +9,7 @@ from typing import Dict, List, Optional, Any
 from msgraph.generated.users.item.user_item_request_builder import UserItemRequestBuilder
 from kiota_abstractions.base_request_configuration import RequestConfiguration
 
-from utils.graph_client import GraphClient
+from ..utils.graph_client import GraphClient
 
 logger = logging.getLogger(__name__)
 
