@@ -63,13 +63,30 @@ src/msgraph_mcp_server/
 
 ### 1. Setup
 - Clone the repo.
-- Create a `config/.env` file with your Azure AD credentials:
+- **Authentication (default – use your current Azure login):**
+  By default the server uses
+  [`DefaultAzureCredential`](https://learn.microsoft.com/python/api/azure-identity/azure.identity.defaultazurecredential)
+  from `azure-identity`. It will automatically pick up your current Azure
+  login context in this order: environment variables, workload identity,
+  managed identity, Azure CLI (`az login`), Azure Developer CLI
+  (`azd auth login`), Azure PowerShell, and Visual Studio / VS Code. For
+  local development simply run:
+  ```bash
+  az login
   ```
-  TENANT_ID=your-tenant-id
-  CLIENT_ID=your-client-id
-  CLIENT_SECRET=your-client-secret
-  ```
-- (Optional) Set up certificate-based auth if needed.
+  and the server will use that token – **no tenant/client id or secret
+  configuration is required**.
+- **Authentication (optional – explicit credentials):**
+  If you need to force a specific credential (for example, for CI where
+  no interactive login is available), create a `config/.env` file based on
+  [`config/.env.example`](config/.env.example). Two flows are supported:
+  - Client secret: set `TENANT_ID`, `CLIENT_ID`, `CLIENT_SECRET`.
+  - Certificate: set `TENANT_ID`, `CLIENT_ID`, `CERTIFICATE_PATH`, and
+    optionally `CERTIFICATE_PWD`.
+
+  The standard `AZURE_*` environment variables consumed by
+  `DefaultAzureCredential` (e.g. `AZURE_TENANT_ID`, `AZURE_CLIENT_ID`,
+  `AZURE_CLIENT_SECRET`) are also honoured.
 
 ### 2. Testing & Development
 
@@ -224,7 +241,9 @@ fastmcp install '/path/to/src/msgraph_mcp_server/server.py' \
 - The `-f` flag points to your `.env` file (never commit secrets!).
 
 ### Using with Cursor
-Add the following to your `.cursor/mcp.json` (do **not** include actual secrets in version control):
+Add the following to your `.cursor/mcp.json`. By default the server uses
+your current Azure login via `DefaultAzureCredential`, so no `env` block
+is required:
 
 ```json
 {
@@ -240,17 +259,21 @@ Add the following to your `.cursor/mcp.json` (do **not** include actual secrets 
       "fastmcp",
       "run",
       "/path/to/src/msgraph_mcp_server/server.py"
-    ],
-    "env": {
-      "TENANT_ID": "<your-tenant-id>",
-      "CLIENT_ID": "<your-client-id>",
-      "CLIENT_SECRET": "<your-client-secret>"
-    }
+    ]
   }
 }
 ```
-- Replace `/path/to/` and the environment variables with your actual values.
-- **Never commit real secrets to your repository!**
+
+If you need to force client-secret authentication instead (do **not**
+commit real secrets), add an `env` block:
+
+```json
+"env": {
+  "TENANT_ID": "<your-tenant-id>",
+  "CLIENT_ID": "<your-client-id>",
+  "CLIENT_SECRET": "<your-client-secret>"
+}
+```
 
 ## License
 
