@@ -143,9 +143,20 @@ See the `groups.py` docstrings for more details on supported fields and behavior
 - `get_user_mfa_status(user_id, ctx)` — Get MFA status for a user
 - `get_group_mfa_status(group_id, ctx)` — Get MFA status for all group members
 
-#### Device Tools
+#### Device Tools (Intune – beta endpoint)
+These tools query Microsoft Intune via the **Microsoft Graph beta** endpoint
+(`https://graph.microsoft.com/beta`) using `msgraph-beta-sdk`, which exposes
+Intune properties and relationships not yet available on the v1.0 endpoint.
+
 - `get_all_managed_devices(filter_os=None)` — Get all managed devices (optionally filter by OS)
 - `get_managed_devices_by_user(user_id)` — Get all managed devices for a specific user
+- `get_managed_device_by_id(device_id)` — Get full details (hardware, compliance, enrollment) of a single managed device
+- `get_detected_apps_for_device(device_id)` — List applications detected on a managed device
+- `get_device_compliance_policy_states(device_id)` — Compliance-policy states for a managed device
+- `get_device_configuration_states(device_id)` — Configuration-profile states for a managed device
+- `get_device_compliance_policies()` — List all Intune device compliance policies
+- `get_device_configurations()` — List all Intune device configuration profiles
+- `get_device_categories()` — List all Intune device categories
 
 #### Conditional Access Policy Tools
 - `get_conditional_access_policies(ctx)` — Get all conditional access policies
@@ -214,6 +225,8 @@ See the `groups.py` docstrings for more details on supported fields and behavior
 | AuditLog.Read.All           | Application | Read all audit log data                   |
 | AuthenticationContext.Read.All | Application | Read all authentication context information |
 | DeviceManagementManagedDevices.Read.All | Application | Read Microsoft Intune devices |
+| DeviceManagementConfiguration.Read.All | Application | Read Microsoft Intune device configuration and policies |
+| DeviceManagementApps.Read.All | Application | Read Microsoft Intune apps (detected apps on devices) |
 | Directory.Read.All          | Application | Read directory data                       |
 | Group.Read.All              | Application | Read all groups                           |
 | GroupMember.Read.All        | Application | Read all group memberships                |

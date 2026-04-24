@@ -521,11 +521,12 @@ wheels = [
 [[package]]
 name = "entraid-mcp-server"
 version = "0.2.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "azure-core" },
     { name = "azure-identity" },
     { name = "fastmcp" },
+    { name = "msgraph-beta-sdk" },
     { name = "msgraph-core" },
     { name = "msgraph-sdk" },
     { name = "python-dotenv" },
@@ -536,6 +537,7 @@ requires-dist = [
     { name = "azure-core", specifier = ">=1.39.0" },
     { name = "azure-identity", specifier = ">=1.25.3" },
     { name = "fastmcp", specifier = ">=2.10.0" },
+    { name = "msgraph-beta-sdk", specifier = ">=1.58.0" },
     { name = "msgraph-core", specifier = ">=1.3.8" },
     { name = "msgraph-sdk", specifier = ">=1.56.0" },
     { name = "python-dotenv", specifier = ">=1.1.0" },
@@ -1074,6 +1076,23 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/01/99/5d239b6156eddf761a636bded1118414d161bd6b7b37a9335549ed159396/msal_extensions-1.3.1.tar.gz", hash = "sha256:c5b0fd10f65ef62b5f1d62f4251d51cbcaf003fcedae8c91b040a488614be1a4", size = 23315, upload-time = "2025-03-14T23:51:03.902Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/5e/75/bd9b7bb966668920f06b200e84454c8f3566b102183bc55c5473d96cb2b9/msal_extensions-1.3.1-py3-none-any.whl", hash = "sha256:96d3de4d034504e969ac5e85bae8106c8373b5c6568e4c8fa7af2eca9dbe6bca", size = 20583, upload-time = "2025-03-14T23:51:03.016Z" },
+]
+
+[[package]]
+name = "msgraph-beta-sdk"
+version = "1.58.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "azure-identity" },
+    { name = "microsoft-kiota-serialization-form" },
+    { name = "microsoft-kiota-serialization-json" },
+    { name = "microsoft-kiota-serialization-multipart" },
+    { name = "microsoft-kiota-serialization-text" },
+    { name = "msgraph-core" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e8/7b/b66e74798262c2e215059385bc994f139bd7529f075e8c307b72c5205024/msgraph_beta_sdk-1.58.0.tar.gz", hash = "sha256:088122e1bbf5a56a7b221939c1b225d212701bbaead7652a7501312702faac41", size = 12002227, upload-time = "2026-04-17T18:23:49.598Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b3/b9/ffb85946d01cffa7d11c317e5af3db63de1ce7c063b6f7b0bc5d51236d71/msgraph_beta_sdk-1.58.0-py3-none-any.whl", hash = "sha256:91fdf2122caaa974e8cdfc357533be1e3e9476f1ef5b8d8814b16efad24b530d", size = 47697753, upload-time = "2026-04-17T18:23:43.227Z" },
 ]
 
 [[package]]

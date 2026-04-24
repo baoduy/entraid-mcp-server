@@ -30,6 +30,7 @@ from azure.identity import (
 )
 from dotenv import load_dotenv
 from msgraph import GraphServiceClient
+from msgraph_beta import GraphServiceClient as GraphBetaServiceClient
 
 logger = logging.getLogger(__name__)
 
@@ -117,6 +118,7 @@ class GraphAuthManager:
 
         self.scopes = scopes or list(DEFAULT_GRAPH_SCOPES)
         self._graph_client: Optional[GraphServiceClient] = None
+        self._beta_graph_client: Optional[GraphBetaServiceClient] = None
         self._credential: Optional[TokenCredential] = None
 
     # ------------------------------------------------------------------
@@ -180,3 +182,28 @@ class GraphAuthManager:
             raise
         except Exception as exc:
             raise AuthenticationError(f"Failed to create Graph client: {exc}") from exc
+
+    def get_beta_graph_client(self) -> GraphBetaServiceClient:
+        """Return (and cache) an authenticated beta :class:`GraphServiceClient`.
+
+        The beta client targets ``https://graph.microsoft.com/beta`` and is
+        required for Intune device-management features that are not yet
+        exposed on the v1.0 endpoint.
+        """
+        if self._beta_graph_client is not None:
+            return self._beta_graph_client
+
+        try:
+            credential = self.get_credential()
+            self._beta_graph_client = GraphBetaServiceClient(
+                credentials=credential,
+                scopes=self.scopes,
+            )
+            logger.info("Successfully created Microsoft Graph beta client")
+            return self._beta_graph_client
+        except AuthenticationError:
+            raise
+        except Exception as exc:
+            raise AuthenticationError(
+                f"Failed to create Graph beta client: {exc}"
+            ) from exc
