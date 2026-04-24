@@ -355,6 +355,106 @@ async def get_managed_devices_by_user(user_id: str, ctx: Context) -> List[Dict[s
         raise
 
 @mcp.tool()
+async def get_managed_device_by_id(device_id: str, ctx: Context) -> Optional[Dict[str, Any]]:
+    """Get full details of a single Intune managed device (beta endpoint)."""
+    await ctx.info(f"Fetching managed device {device_id}...")
+    try:
+        result = await managed_devices.get_managed_device_by_id(graph_client, device_id)
+        await ctx.report_progress(progress=100, total=100)
+        if not result:
+            await ctx.warning(f"Managed device with ID {device_id} not found.")
+        return result
+    except Exception as e:
+        error_msg = f"Error fetching managed device {device_id}: {str(e)}"
+        logger.error(error_msg)
+        await ctx.error(error_msg)
+        raise
+
+@mcp.tool()
+async def get_detected_apps_for_device(device_id: str, ctx: Context) -> List[Dict[str, Any]]:
+    """Get applications detected on a specific Intune managed device (beta endpoint)."""
+    await ctx.info(f"Fetching detected apps for device {device_id}...")
+    try:
+        results = await managed_devices.get_detected_apps_for_device(graph_client, device_id)
+        await ctx.report_progress(progress=100, total=100)
+        return results
+    except Exception as e:
+        error_msg = f"Error fetching detected apps for device {device_id}: {str(e)}"
+        logger.error(error_msg)
+        await ctx.error(error_msg)
+        raise
+
+@mcp.tool()
+async def get_device_compliance_policy_states(device_id: str, ctx: Context) -> List[Dict[str, Any]]:
+    """Get compliance-policy states for a specific Intune managed device (beta endpoint)."""
+    await ctx.info(f"Fetching compliance policy states for device {device_id}...")
+    try:
+        results = await managed_devices.get_device_compliance_policy_states(graph_client, device_id)
+        await ctx.report_progress(progress=100, total=100)
+        return results
+    except Exception as e:
+        error_msg = f"Error fetching compliance policy states for device {device_id}: {str(e)}"
+        logger.error(error_msg)
+        await ctx.error(error_msg)
+        raise
+
+@mcp.tool()
+async def get_device_configuration_states(device_id: str, ctx: Context) -> List[Dict[str, Any]]:
+    """Get configuration-profile states for a specific Intune managed device (beta endpoint)."""
+    await ctx.info(f"Fetching configuration states for device {device_id}...")
+    try:
+        results = await managed_devices.get_device_configuration_states(graph_client, device_id)
+        await ctx.report_progress(progress=100, total=100)
+        return results
+    except Exception as e:
+        error_msg = f"Error fetching configuration states for device {device_id}: {str(e)}"
+        logger.error(error_msg)
+        await ctx.error(error_msg)
+        raise
+
+@mcp.tool()
+async def get_device_compliance_policies(ctx: Context) -> List[Dict[str, Any]]:
+    """List all Intune device compliance policies (beta endpoint)."""
+    await ctx.info("Fetching Intune device compliance policies...")
+    try:
+        results = await managed_devices.get_device_compliance_policies(graph_client)
+        await ctx.report_progress(progress=100, total=100)
+        return results
+    except Exception as e:
+        error_msg = f"Error fetching device compliance policies: {str(e)}"
+        logger.error(error_msg)
+        await ctx.error(error_msg)
+        raise
+
+@mcp.tool()
+async def get_device_configurations(ctx: Context) -> List[Dict[str, Any]]:
+    """List all Intune device configuration profiles (beta endpoint)."""
+    await ctx.info("Fetching Intune device configuration profiles...")
+    try:
+        results = await managed_devices.get_device_configurations(graph_client)
+        await ctx.report_progress(progress=100, total=100)
+        return results
+    except Exception as e:
+        error_msg = f"Error fetching device configurations: {str(e)}"
+        logger.error(error_msg)
+        await ctx.error(error_msg)
+        raise
+
+@mcp.tool()
+async def get_device_categories(ctx: Context) -> List[Dict[str, Any]]:
+    """List all Intune device categories (beta endpoint)."""
+    await ctx.info("Fetching Intune device categories...")
+    try:
+        results = await managed_devices.get_device_categories(graph_client)
+        await ctx.report_progress(progress=100, total=100)
+        return results
+    except Exception as e:
+        error_msg = f"Error fetching device categories: {str(e)}"
+        logger.error(error_msg)
+        await ctx.error(error_msg)
+        raise
+
+@mcp.tool()
 async def get_user_audit_logs(user_id: str, ctx: Context, days: int = 30) -> List[Dict[str, Any]]:
     """Get all relevant directory audit logs for a user by user_id within the last N days (default 30)."""
     await ctx.info(f"Fetching directory audit logs for user {user_id} for the last {days} days...")
