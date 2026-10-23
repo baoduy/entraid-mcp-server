@@ -3,11 +3,11 @@
 from types import SimpleNamespace
 
 import pytest
-
 from conftest import make_groups
-from msgraph_mcp_server import server
 from test_application_details_and_sign_ins import sign_ins
 from test_paging import TOOLS
+
+from msgraph_mcp_server import server
 
 
 class Pages:
@@ -15,7 +15,10 @@ class Pages:
 
     def __init__(self, *pages):
         self._pages = [
-            SimpleNamespace(value=list(items), odata_next_link=f"page-{i + 1}" if i + 1 < len(pages) else None)
+            SimpleNamespace(
+                value=list(items),
+                odata_next_link=f"page-{i + 1}" if i + 1 < len(pages) else None,
+            )
             for i, items in enumerate(pages)
         ]
 
@@ -46,7 +49,11 @@ async def test_sign_in_logs_read_on_past_an_empty_page(graph, ctx):
 
     logs = await server.get_user_sign_ins("aoife@contoso.com", ctx, days=7)
 
-    assert [log["id"] for log in logs] == ["sign-in-0000", "sign-in-0001", "sign-in-0002"]
+    assert [log["id"] for log in logs] == [
+        "sign-in-0000",
+        "sign-in-0001",
+        "sign-in-0002",
+    ]
 
 
 async def test_a_group_list_with_no_body_from_microsoft_graph_is_empty(graph, ctx):

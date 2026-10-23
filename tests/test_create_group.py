@@ -82,15 +82,33 @@ async def test_a_dynamic_group_keeps_its_rule_and_gets_no_members_added(graph, c
         ({"mailNickname": "team"}, "displayName is required for creating a group"),
         ({"displayName": "Team"}, "mailNickname is required for creating a group"),
         (
-            {"displayName": "Team", "mailNickname": "team", "groupTypes": ["DynamicMembership"]},
+            {
+                "displayName": "Team",
+                "mailNickname": "team",
+                "groupTypes": ["DynamicMembership"],
+            },
             "membershipRule is required for dynamic membership groups",
         ),
-        ({"displayName": "Team", "mailNickname": "team", "owners": "owner-1"}, "owners must be a list of user IDs"),
-        ({"displayName": "Team", "mailNickname": "team", "members": "user-1"}, "members must be a list of user IDs"),
+        (
+            {"displayName": "Team", "mailNickname": "team", "owners": "owner-1"},
+            "owners must be a list of user IDs",
+        ),
+        (
+            {"displayName": "Team", "mailNickname": "team", "members": "user-1"},
+            "members must be a list of user IDs",
+        ),
     ],
-    ids=["no display name", "no mail nickname", "dynamic without rule", "owners not a list", "members not a list"],
+    ids=[
+        "no display name",
+        "no mail nickname",
+        "dynamic without rule",
+        "owners not a list",
+        "members not a list",
+    ],
 )
-async def test_invalid_group_data_is_refused_before_anything_is_created(graph, created, group_data, message):
+async def test_invalid_group_data_is_refused_before_anything_is_created(
+    graph, created, group_data, message
+):
     with pytest.raises(ValueError, match=f"^{message}$"):
         await groups.create_group(graph, group_data)
 
@@ -104,4 +122,6 @@ async def test_no_group_back_from_microsoft_graph_is_an_error(graph, monkeypatch
     monkeypatch.setattr(graph.groups, "post", post, raising=False)
 
     with pytest.raises(Exception, match="^Failed to create group$"):
-        await groups.create_group(graph, {"displayName": "Team", "mailNickname": "team"})
+        await groups.create_group(
+            graph, {"displayName": "Team", "mailNickname": "team"}
+        )

@@ -1,0 +1,290 @@
+{
+  "add_group_member": {
+    "notifications": [
+      "Error adding member aoife@contoso.com to group all-staff: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'add_group_member': Service unavailable"
+  },
+  "add_group_owner": {
+    "notifications": [
+      "Error adding owner aoife@contoso.com to group all-staff: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'add_group_owner': Service unavailable"
+  },
+  "create_application": {
+    "notifications": [
+      "Error creating application: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'create_application': Service unavailable"
+  },
+  "create_group": {
+    "notifications": [
+      "Error creating group: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'create_group': Service unavailable"
+  },
+  "create_service_principal": {
+    "notifications": [
+      "Error creating service principal: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'create_service_principal': Service unavailable"
+  },
+  "delete_application": {
+    "notifications": [
+      "Error deleting application payroll-sync-object: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'delete_application': Service unavailable"
+  },
+  "delete_group": {
+    "notifications": [
+      "Error deleting group all-staff: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'delete_group': Service unavailable"
+  },
+  "delete_service_principal": {
+    "notifications": [
+      "Error deleting service principal payroll-sync-sp: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'delete_service_principal': Service unavailable"
+  },
+  "get_all_graph_permissions": {
+    "notifications": [
+      "Error retrieving Microsoft Graph permissions: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'get_all_graph_permissions': Service unavailable"
+  },
+  "get_all_groups": {
+    "notifications": [
+      "Error fetching all groups: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'get_all_groups': Service unavailable"
+  },
+  "get_all_managed_devices": {
+    "notifications": [
+      "Error fetching all managed devices: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'get_all_managed_devices': Service unavailable"
+  },
+  "get_application_by_id": {
+    "notifications": [
+      "Error fetching application payroll-sync-object: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'get_application_by_id': Service unavailable"
+  },
+  "get_conditional_access_policies": {
+    "notifications": [
+      "Error fetching conditional access policies: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'get_conditional_access_policies': Service unavailable"
+  },
+  "get_conditional_access_policy_by_id": {
+    "notifications": [
+      "Error fetching conditional access policy policy-1: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'get_conditional_access_policy_by_id': Service unavailable"
+  },
+  "get_detected_apps_for_device": {
+    "notifications": [
+      "Error fetching detected apps for device device-1: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'get_detected_apps_for_device': Service unavailable"
+  },
+  "get_device_categories": {
+    "notifications": [
+      "Error fetching device categories: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'get_device_categories': Service unavailable"
+  },
+  "get_device_compliance_policies": {
+    "notifications": [
+      "Error fetching device compliance policies: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'get_device_compliance_policies': Service unavailable"
+  },
+  "get_device_compliance_policy_states": {
+    "notifications": [
+      "Error fetching compliance policy states for device device-1: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'get_device_compliance_policy_states': Service unavailable"
+  },
+  "get_device_configuration_states": {
+    "notifications": [
+      "Error fetching configuration states for device device-1: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'get_device_configuration_states': Service unavailable"
+  },
+  "get_device_configurations": {
+    "notifications": [
+      "Error fetching device configurations: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'get_device_configurations': Service unavailable"
+  },
+  "get_group_by_id": {
+    "notifications": [
+      "Error fetching group all-staff: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'get_group_by_id': Service unavailable"
+  },
+  "get_group_members": {
+    "notifications": [
+      "Error fetching group members for group all-staff: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'get_group_members': Service unavailable"
+  },
+  "get_group_mfa_status": {
+    "notifications": [
+      "Error fetching group MFA status for all-staff: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'get_group_mfa_status': Service unavailable"
+  },
+  "get_managed_device_by_id": {
+    "notifications": [
+      "Error fetching managed device device-1: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'get_managed_device_by_id': Service unavailable"
+  },
+  "get_managed_devices_by_user": {
+    "notifications": [
+      "Error fetching managed devices for user aoife@contoso.com: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'get_managed_devices_by_user': Service unavailable"
+  },
+  "get_privileged_users": {
+    "notifications": [
+      "Error fetching privileged users: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'get_privileged_users': Service unavailable"
+  },
+  "get_service_principal_by_id": {
+    "notifications": [
+      "Error fetching service principal payroll-sync-sp: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'get_service_principal_by_id': Service unavailable"
+  },
+  "get_user_audit_logs": {
+    "notifications": [
+      "Error fetching directory audit logs for user aoife@contoso.com: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'get_user_audit_logs': Service unavailable"
+  },
+  "get_user_by_id": {
+    "notifications": [
+      "Error fetching user aoife@contoso.com: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'get_user_by_id': Service unavailable"
+  },
+  "get_user_groups": {
+    "notifications": [
+      "Error fetching groups for user aoife@contoso.com: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'get_user_groups': Service unavailable"
+  },
+  "get_user_mfa_status": {
+    "notifications": [
+      "Error fetching MFA status for aoife@contoso.com: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'get_user_mfa_status': Service unavailable"
+  },
+  "get_user_password_method": {
+    "notifications": [
+      "Error getting password method password-1 for user aoife@contoso.com: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'get_user_password_method': Service unavailable"
+  },
+  "get_user_roles": {
+    "notifications": [
+      "Error fetching roles for user aoife@contoso.com: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'get_user_roles': Service unavailable"
+  },
+  "get_user_sign_ins": {
+    "notifications": [
+      "Error fetching sign-in logs for aoife@contoso.com: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'get_user_sign_ins': Service unavailable"
+  },
+  "list_applications": {
+    "notifications": [
+      "Error listing applications: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'list_applications': Service unavailable"
+  },
+  "list_permission_categories_and_tasks": {
+    "notifications": [
+      "Error listing permission categories and tasks: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'list_permission_categories_and_tasks': Service unavailable"
+  },
+  "list_service_principals": {
+    "notifications": [
+      "Error listing service principals: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'list_service_principals': Service unavailable"
+  },
+  "list_user_password_methods": {
+    "notifications": [
+      "Error listing password methods for user aoife@contoso.com: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'list_user_password_methods': Service unavailable"
+  },
+  "remove_group_member": {
+    "notifications": [
+      "Error removing member aoife@contoso.com from group all-staff: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'remove_group_member': Service unavailable"
+  },
+  "remove_group_owner": {
+    "notifications": [
+      "Error removing owner aoife@contoso.com from group all-staff: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'remove_group_owner': Service unavailable"
+  },
+  "reset_user_password_direct": {
+    "notifications": [
+      "Error directly resetting password for user aoife@contoso.com: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'reset_user_password_direct': Service unavailable"
+  },
+  "search_groups_by_name": {
+    "notifications": [
+      "Error searching groups by name: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'search_groups_by_name': Service unavailable"
+  },
+  "search_permissions": {
+    "notifications": [
+      "Error searching for permissions with term 'User.Read': Service unavailable"
+    ],
+    "error_result": "Error calling tool 'search_permissions': Service unavailable"
+  },
+  "search_users": {
+    "notifications": [
+      "Error searching users: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'search_users': Service unavailable"
+  },
+  "suggest_permissions_for_task": {
+    "notifications": [
+      "Error suggesting permissions for task users/read_user_profiles: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'suggest_permissions_for_task': Service unavailable"
+  },
+  "update_application": {
+    "notifications": [
+      "Error updating application payroll-sync-object: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'update_application': Service unavailable"
+  },
+  "update_group": {
+    "notifications": [
+      "Error updating group all-staff: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'update_group': Service unavailable"
+  },
+  "update_service_principal": {
+    "notifications": [
+      "Error updating service principal payroll-sync-sp: Service unavailable"
+    ],
+    "error_result": "Error calling tool 'update_service_principal': Service unavailable"
+  }
+}

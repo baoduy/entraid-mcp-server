@@ -26,12 +26,18 @@ async def reset_expecting(graph_refuses, ctx, caplog, **kwargs):
         with pytest.raises(Exception, match="does not comply with the password policy"):
             await reset(ctx, **kwargs)
         # The refusal is logged, so the absence check below reads a real error line.
-        assert [r for r in caplog.records if r.levelname == "ERROR" and AOIFE in r.getMessage()]
+        assert [
+            r
+            for r in caplog.records
+            if r.levelname == "ERROR" and AOIFE in r.getMessage()
+        ]
     else:
         await reset(ctx, **kwargs)
 
 
-async def test_a_generated_password_does_not_follow_pythons_ordinary_random_generator(graph, ctx, aoife):
+async def test_a_generated_password_does_not_follow_pythons_ordinary_random_generator(
+    graph, ctx, aoife
+):
     random.seed(42)
     first = await reset(ctx, generate_password=True, password_length=16)
     random.seed(42)
@@ -41,7 +47,9 @@ async def test_a_generated_password_does_not_follow_pythons_ordinary_random_gene
 
 
 @pytest.mark.parametrize("length", [8, 16, 256])
-async def test_a_generated_password_has_the_asked_length_and_every_character_type(graph, ctx, aoife, length):
+async def test_a_generated_password_has_the_asked_length_and_every_character_type(
+    graph, ctx, aoife, length
+):
     await reset(ctx, generate_password=True, password_length=length)
 
     [password] = graph.password_changes(AOIFE)
@@ -52,7 +60,9 @@ async def test_a_generated_password_has_the_asked_length_and_every_character_typ
     assert any(not c.isalnum() for c in password)
 
 
-async def test_a_generated_password_has_12_characters_when_no_length_is_asked(graph, ctx, aoife):
+async def test_a_generated_password_has_12_characters_when_no_length_is_asked(
+    graph, ctx, aoife
+):
     await reset(ctx, generate_password=True)
 
     [password] = graph.password_changes(AOIFE)
@@ -60,7 +70,9 @@ async def test_a_generated_password_has_12_characters_when_no_length_is_asked(gr
 
 
 @pytest.mark.parametrize("length", [3, 7, 257])
-async def test_a_generated_length_outside_8_to_256_is_refused(graph, ctx, aoife, length):
+async def test_a_generated_length_outside_8_to_256_is_refused(
+    graph, ctx, aoife, length
+):
     with pytest.raises(ValueError) as refusal:
         await reset(ctx, generate_password=True, password_length=length)
 
@@ -78,20 +90,30 @@ async def test_the_generated_password_comes_back_to_the_admin(graph, ctx, aoife)
     assert result["generated_password"] == sent
 
 
-@pytest.mark.parametrize("graph_refuses", [False, True], ids=["accepts the change", "refuses the change"])
-async def test_no_generated_password_reaches_the_server_log(graph, ctx, aoife, caplog, graph_refuses):
+@pytest.mark.parametrize(
+    "graph_refuses", [False, True], ids=["accepts the change", "refuses the change"]
+)
+async def test_no_generated_password_reaches_the_server_log(
+    graph, ctx, aoife, caplog, graph_refuses
+):
     caplog.set_level("DEBUG")
     aoife.refuse_patch = graph_refuses
 
-    await reset_expecting(graph_refuses, ctx, caplog, generate_password=True, password_length=16)
+    await reset_expecting(
+        graph_refuses, ctx, caplog, generate_password=True, password_length=16
+    )
 
     [password] = graph.password_changes(AOIFE)
     assert password not in caplog.text
     assert not [e for e in ctx.errors if password in e]
 
 
-@pytest.mark.parametrize("graph_refuses", [False, True], ids=["accepts the change", "refuses the change"])
-async def test_no_supplied_password_reaches_the_server_log(graph, ctx, aoife, caplog, graph_refuses):
+@pytest.mark.parametrize(
+    "graph_refuses", [False, True], ids=["accepts the change", "refuses the change"]
+)
+async def test_no_supplied_password_reaches_the_server_log(
+    graph, ctx, aoife, caplog, graph_refuses
+):
     caplog.set_level("DEBUG")
     aoife.refuse_patch = graph_refuses
 
@@ -110,7 +132,9 @@ async def test_a_supplied_password_goes_to_entra_id_unchanged(graph, ctx, aoife)
 
 
 async def test_a_generated_password_wins_over_a_supplied_one(graph, ctx, aoife):
-    result = await reset(ctx, password="Ab1!xy", generate_password=True, password_length=16)
+    result = await reset(
+        ctx, password="Ab1!xy", generate_password=True, password_length=16
+    )
 
     [sent] = graph.password_changes(AOIFE)
     assert sent != "Ab1!xy"
