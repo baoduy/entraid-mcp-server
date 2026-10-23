@@ -1,0 +1,66 @@
+"""One valid call per tool: the arguments an AI client sends to each of the 48 tools."""
+
+AOIFE = "aoife@contoso.com"
+ALL_STAFF = "all-staff"
+
+TOOL_CALLS = {
+    "add_group_member": {"group_id": ALL_STAFF, "member_id": AOIFE},
+    "add_group_owner": {"group_id": ALL_STAFF, "owner_id": AOIFE},
+    "create_application": {"app_data": {"displayName": "Payroll Sync"}},
+    "create_group": {
+        "group_data": {"displayName": "All Staff", "mailNickname": "allstaff"}
+    },
+    "create_service_principal": {"sp_data": {"appId": "payroll-sync-app"}},
+    "delete_application": {"app_id": "payroll-sync-object"},
+    "delete_group": {"group_id": ALL_STAFF},
+    "delete_service_principal": {"sp_id": "payroll-sync-sp"},
+    "get_all_graph_permissions": {},
+    "get_all_groups": {},
+    "get_all_managed_devices": {},
+    "get_application_by_id": {"app_id": "payroll-sync-object"},
+    "get_conditional_access_policies": {},
+    "get_conditional_access_policy_by_id": {"policy_id": "policy-1"},
+    "get_detected_apps_for_device": {"device_id": "device-1"},
+    "get_device_categories": {},
+    "get_device_compliance_policies": {},
+    "get_device_compliance_policy_states": {"device_id": "device-1"},
+    "get_device_configuration_states": {"device_id": "device-1"},
+    "get_device_configurations": {},
+    "get_group_by_id": {"group_id": ALL_STAFF},
+    "get_group_members": {"group_id": ALL_STAFF},
+    "get_group_mfa_status": {"group_id": ALL_STAFF},
+    "get_managed_device_by_id": {"device_id": "device-1"},
+    "get_managed_devices_by_user": {"user_id": AOIFE},
+    "get_privileged_users": {},
+    "get_service_principal_by_id": {"sp_id": "payroll-sync-sp"},
+    "get_user_audit_logs": {"user_id": AOIFE},
+    "get_user_by_id": {"user_id": AOIFE},
+    "get_user_groups": {"user_id": AOIFE},
+    "get_user_mfa_status": {"user_id": AOIFE},
+    "get_user_password_method": {"user_id": AOIFE, "method_id": "password-1"},
+    "get_user_roles": {"user_id": AOIFE},
+    "get_user_sign_ins": {"user_id": AOIFE},
+    "list_applications": {},
+    "list_permission_categories_and_tasks": {},
+    "list_service_principals": {},
+    "list_user_password_methods": {"user_id": AOIFE},
+    "remove_group_member": {"group_id": ALL_STAFF, "member_id": AOIFE},
+    "remove_group_owner": {"group_id": ALL_STAFF, "owner_id": AOIFE},
+    "reset_user_password_direct": {"user_id": AOIFE, "password": "Sp!ce-Harbor-2026"},
+    "search_groups_by_name": {"name": "All Staff"},
+    "search_permissions": {"search_term": "User.Read"},
+    "search_users": {"query": "Aoife"},
+    "suggest_permissions_for_task": {
+        "task_category": "users",
+        "task_name": "read_user_profiles",
+    },
+    "update_application": {
+        "app_id": "payroll-sync-object",
+        "app_data": {"displayName": "Payroll Sync"},
+    },
+    "update_group": {"group_id": ALL_STAFF, "group_data": {"displayName": "All Staff"}},
+    "update_service_principal": {
+        "sp_id": "payroll-sync-sp",
+        "sp_data": {"accountEnabled": True},
+    },
+}

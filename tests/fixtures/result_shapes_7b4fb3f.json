@@ -1,0 +1,632 @@
+{
+  "add_group_member": {
+    "status": null,
+    "message": null
+  },
+  "add_group_owner": {
+    "status": null,
+    "message": null
+  },
+  "create_application": {
+    "id": null,
+    "appId": null,
+    "displayName": null,
+    "createdDateTime": null,
+    "signInAudience": null,
+    "publisherDomain": null,
+    "tags": null
+  },
+  "create_group": {
+    "id": null,
+    "displayName": null,
+    "mail": null,
+    "mailNickname": null,
+    "description": null,
+    "groupTypes": null,
+    "securityEnabled": null,
+    "mailEnabled": null,
+    "visibility": null,
+    "createdDateTime": null
+  },
+  "create_service_principal": {
+    "id": null,
+    "appId": null,
+    "displayName": null,
+    "createdDateTime": null,
+    "accountEnabled": null,
+    "appOwnerOrganizationId": null,
+    "tags": null
+  },
+  "delete_application": {
+    "status": null,
+    "message": null
+  },
+  "delete_group": {
+    "status": null,
+    "message": null
+  },
+  "delete_service_principal": {
+    "status": null,
+    "message": null
+  },
+  "get_all_graph_permissions": {
+    "status": null,
+    "delegated_permissions": [
+      {
+        "id": null,
+        "value": null,
+        "type": null,
+        "adminConsentDisplayName": null,
+        "adminConsentDescription": null,
+        "userConsentDisplayName": null,
+        "userConsentDescription": null,
+        "isEnabled": null
+      }
+    ],
+    "application_permissions": [
+      {
+        "id": null,
+        "value": null,
+        "type": null,
+        "displayName": null,
+        "description": null,
+        "isEnabled": null
+      }
+    ]
+  },
+  "get_conditional_access_policies": [
+    {
+      "id": null,
+      "displayName": null,
+      "state": null,
+      "createdDateTime": null,
+      "modifiedDateTime": null,
+      "Users_Include": null,
+      "Users_Exclude": null,
+      "Groups_Include": null,
+      "Groups_Include_Names": null,
+      "Groups_Exclude": null,
+      "Groups_Exclude_Names": null,
+      "Roles_Include": null,
+      "Roles_Exclude": null,
+      "Include_Guest_Or_External_Users": null,
+      "Exclude_Guest_Or_External_Users": null,
+      "Apps_Include": null,
+      "Apps_Exclude": null,
+      "User_Actions": null,
+      "Authentication_Context_References": null,
+      "Application_Filter": null,
+      "User_Risk_Levels": null,
+      "Sign_In_Risk_Levels": null,
+      "Service_Principal_Risk_Levels": null,
+      "Insider_Risk_Levels": null,
+      "Client_App_Types": null,
+      "Platforms": null,
+      "Locations": null,
+      "Devices": null,
+      "Client_Applications": null,
+      "Grant_Operator": null,
+      "Grant_Built_In_Controls": null,
+      "Grant_Custom_Authentication_Factors": null,
+      "Grant_Terms_Of_Use": null,
+      "Grant_Auth_Strength_Id": null,
+      "Grant_Auth_Strength_DisplayName": null,
+      "Grant_Auth_Strength_Description": null,
+      "Grant_Auth_Strength_PolicyType": null,
+      "Grant_Auth_Strength_Requirements": null,
+      "Grant_Auth_Strength_Combinations": null,
+      "Disable_Resilience_Defaults": null,
+      "Application_Enforced_Restrictions": null,
+      "Cloud_App_Security": null,
+      "Persistent_Browser": null,
+      "Sign_In_Frequency_Value": null,
+      "Sign_In_Frequency_Type": null,
+      "Sign_In_Frequency_Auth_Type": null,
+      "Sign_In_Frequency_Interval": null,
+      "Sign_In_Frequency_IsEnabled": null
+    }
+  ],
+  "get_conditional_access_policy_by_id": {
+    "id": null,
+    "displayName": null,
+    "state": null,
+    "createdDateTime": null,
+    "modifiedDateTime": null,
+    "Users_Include": null,
+    "Users_Exclude": null,
+    "Groups_Include": null,
+    "Groups_Include_Names": null,
+    "Groups_Exclude": null,
+    "Groups_Exclude_Names": null,
+    "Roles_Include": null,
+    "Roles_Exclude": null,
+    "Include_Guest_Or_External_Users": null,
+    "Exclude_Guest_Or_External_Users": null,
+    "Apps_Include": null,
+    "Apps_Exclude": null,
+    "User_Actions": null,
+    "Authentication_Context_References": null,
+    "Application_Filter": null,
+    "User_Risk_Levels": null,
+    "Sign_In_Risk_Levels": null,
+    "Service_Principal_Risk_Levels": null,
+    "Insider_Risk_Levels": null,
+    "Client_App_Types": null,
+    "Platforms": null,
+    "Locations": null,
+    "Devices": null,
+    "Client_Applications": null,
+    "Grant_Operator": null,
+    "Grant_Built_In_Controls": null,
+    "Grant_Custom_Authentication_Factors": null,
+    "Grant_Terms_Of_Use": null,
+    "Grant_Auth_Strength_Id": null,
+    "Grant_Auth_Strength_DisplayName": null,
+    "Grant_Auth_Strength_Description": null,
+    "Grant_Auth_Strength_PolicyType": null,
+    "Grant_Auth_Strength_Requirements": null,
+    "Grant_Auth_Strength_Combinations": null,
+    "Disable_Resilience_Defaults": null,
+    "Application_Enforced_Restrictions": null,
+    "Cloud_App_Security": null,
+    "Persistent_Browser": null,
+    "Sign_In_Frequency_Value": null,
+    "Sign_In_Frequency_Type": null,
+    "Sign_In_Frequency_Auth_Type": null,
+    "Sign_In_Frequency_Interval": null,
+    "Sign_In_Frequency_IsEnabled": null
+  },
+  "get_detected_apps_for_device": [
+    {
+      "id": null,
+      "displayName": null,
+      "version": null,
+      "sizeInByte": null,
+      "deviceCount": null,
+      "platform": null,
+      "publisher": null
+    }
+  ],
+  "get_device_categories": [
+    {
+      "id": null,
+      "displayName": null,
+      "description": null,
+      "roleScopeTagIds": null
+    }
+  ],
+  "get_device_compliance_policies": [
+    {
+      "id": null,
+      "displayName": null,
+      "description": null,
+      "version": null,
+      "odataType": null,
+      "createdDateTime": null,
+      "lastModifiedDateTime": null,
+      "roleScopeTagIds": null
+    }
+  ],
+  "get_device_compliance_policy_states": [
+    {
+      "id": null,
+      "displayName": null,
+      "state": null,
+      "version": null,
+      "platformType": null,
+      "settingCount": null,
+      "userPrincipalName": null,
+      "userId": null
+    }
+  ],
+  "get_device_configuration_states": [
+    {
+      "id": null,
+      "displayName": null,
+      "state": null,
+      "version": null,
+      "platformType": null,
+      "settingCount": null,
+      "userPrincipalName": null,
+      "userId": null
+    }
+  ],
+  "get_device_configurations": [
+    {
+      "id": null,
+      "displayName": null,
+      "description": null,
+      "version": null,
+      "odataType": null,
+      "createdDateTime": null,
+      "lastModifiedDateTime": null,
+      "roleScopeTagIds": null
+    }
+  ],
+  "get_group_by_id": {
+    "id": null,
+    "displayName": null,
+    "mail": null,
+    "mailNickname": null,
+    "description": null,
+    "groupTypes": null,
+    "securityEnabled": null,
+    "mailEnabled": null,
+    "visibility": null,
+    "createdDateTime": null
+  },
+  "get_managed_device_by_id": {
+    "id": null,
+    "deviceName": null,
+    "managedDeviceName": null,
+    "userId": null,
+    "userPrincipalName": null,
+    "userDisplayName": null,
+    "emailAddress": null,
+    "operatingSystem": null,
+    "osVersion": null,
+    "manufacturer": null,
+    "model": null,
+    "serialNumber": null,
+    "deviceType": null,
+    "chassisType": null,
+    "joinType": null,
+    "azureADDeviceId": null,
+    "azureADRegistered": null,
+    "autopilotEnrolled": null,
+    "enrolledDateTime": null,
+    "enrollmentProfileName": null,
+    "enrolledByUserPrincipalName": null,
+    "managementAgent": null,
+    "managementState": null,
+    "ownerType": null,
+    "managedDeviceOwnerType": null,
+    "complianceState": null,
+    "complianceGracePeriodExpirationDateTime": null,
+    "jailBroken": null,
+    "isEncrypted": null,
+    "isSupervised": null,
+    "deviceEnrollmentType": null,
+    "deviceRegistrationState": null,
+    "deviceCategoryDisplayName": null,
+    "lastSyncDateTime": null,
+    "freeStorageSpaceInBytes": null,
+    "totalStorageSpaceInBytes": null,
+    "physicalMemoryInBytes": null,
+    "processorArchitecture": null,
+    "wiFiMacAddress": null,
+    "ethernetMacAddress": null,
+    "imei": null,
+    "meid": null,
+    "iccid": null,
+    "udid": null,
+    "notes": null,
+    "partnerReportedThreatState": null,
+    "windowsActiveMalwareCount": null,
+    "windowsRemediatedMalwareCount": null,
+    "roleScopeTagIds": null,
+    "hardwareInformation": {
+      "serialNumber": null,
+      "manufacturer": null,
+      "model": null,
+      "totalStorageSpace": null,
+      "freeStorageSpace": null,
+      "imei": null,
+      "meid": null,
+      "operatingSystemLanguage": null,
+      "wifiMac": null
+    }
+  },
+  "get_privileged_users": [
+    {
+      "id": null,
+      "displayName": null,
+      "mail": null,
+      "userPrincipalName": null,
+      "givenName": null,
+      "surname": null,
+      "jobTitle": null,
+      "officeLocation": null,
+      "businessPhones": null,
+      "mobilePhone": null,
+      "roles": null
+    }
+  ],
+  "get_service_principal_by_id": {
+    "id": null,
+    "appId": null,
+    "displayName": null,
+    "createdDateTime": null,
+    "accountEnabled": null,
+    "appOwnerOrganizationId": null,
+    "tags": null,
+    "appRoleAssignments": [
+      {
+        "id": null,
+        "createdDateTime": null,
+        "appRoleId": null,
+        "principalDisplayName": null,
+        "principalId": null,
+        "principalType": null,
+        "resourceDisplayName": null,
+        "resourceId": null
+      }
+    ],
+    "oauth2PermissionGrants": [
+      {
+        "id": null,
+        "clientId": null,
+        "consentType": null,
+        "principalId": null,
+        "resourceId": null,
+        "scope": null
+      }
+    ]
+  },
+  "get_user_by_id": {
+    "id": null,
+    "displayName": null,
+    "mail": null,
+    "userPrincipalName": null,
+    "givenName": null,
+    "surname": null,
+    "jobTitle": null,
+    "officeLocation": null,
+    "businessPhones": null,
+    "mobilePhone": null
+  },
+  "get_user_groups": [
+    {
+      "id": null,
+      "displayName": null,
+      "mail": null,
+      "groupTypes": null,
+      "description": null
+    }
+  ],
+  "get_user_mfa_status": {
+    "userPrincipalName": null,
+    "mail": null,
+    "companyName": null,
+    "mfaStatus": null,
+    "methods": {
+      "email": null,
+      "fido2": null,
+      "authenticatorApp": null,
+      "password": null,
+      "phone": null,
+      "softwareOath": null,
+      "temporaryAccessPass": null,
+      "windowsHelloForBusiness": null
+    }
+  },
+  "get_user_password_method": {
+    "id": null,
+    "createdDateTime": null
+  },
+  "get_user_roles": [
+    {
+      "id": null,
+      "displayName": null,
+      "description": null,
+      "roleTemplateId": null
+    }
+  ],
+  "list_applications": [
+    {
+      "id": null,
+      "appId": null,
+      "displayName": null,
+      "createdDateTime": null,
+      "signInAudience": null,
+      "publisherDomain": null,
+      "tags": null
+    }
+  ],
+  "list_permission_categories_and_tasks": {
+    "status": null,
+    "categories": {
+      "users": {
+        "tasks": [
+          {
+            "name": null,
+            "description": null
+          }
+        ]
+      },
+      "groups": {
+        "tasks": [
+          {
+            "name": null,
+            "description": null
+          }
+        ]
+      },
+      "mail": {
+        "tasks": [
+          {
+            "name": null,
+            "description": null
+          }
+        ]
+      },
+      "calendar": {
+        "tasks": [
+          {
+            "name": null,
+            "description": null
+          }
+        ]
+      },
+      "files": {
+        "tasks": [
+          {
+            "name": null,
+            "description": null
+          }
+        ]
+      },
+      "devices": {
+        "tasks": [
+          {
+            "name": null,
+            "description": null
+          }
+        ]
+      },
+      "audit_logs": {
+        "tasks": [
+          {
+            "name": null,
+            "description": null
+          }
+        ]
+      },
+      "directory": {
+        "tasks": [
+          {
+            "name": null,
+            "description": null
+          }
+        ]
+      }
+    }
+  },
+  "list_service_principals": [
+    {
+      "id": null,
+      "appId": null,
+      "displayName": null,
+      "createdDateTime": null,
+      "accountEnabled": null,
+      "appOwnerOrganizationId": null,
+      "tags": null
+    }
+  ],
+  "list_user_password_methods": [
+    {
+      "id": null,
+      "createdDateTime": null
+    }
+  ],
+  "remove_group_member": {
+    "status": null,
+    "message": null
+  },
+  "remove_group_owner": {
+    "status": null,
+    "message": null
+  },
+  "reset_user_password_direct": {
+    "status": null,
+    "userId": null,
+    "passwordResetRequired": null,
+    "message": null
+  },
+  "search_permissions": {
+    "status": null,
+    "search_term": null,
+    "matching_delegated_permissions": [
+      {
+        "id": null,
+        "value": null,
+        "type": null,
+        "adminConsentDisplayName": null,
+        "adminConsentDescription": null,
+        "userConsentDisplayName": null,
+        "userConsentDescription": null,
+        "isEnabled": null
+      }
+    ],
+    "matching_application_permissions": [
+      {
+        "id": null,
+        "value": null,
+        "type": null,
+        "displayName": null,
+        "description": null,
+        "isEnabled": null
+      }
+    ],
+    "total_matches": null
+  },
+  "suggest_permissions_for_task": {
+    "status": null,
+    "message": null,
+    "available_tasks": null
+  },
+  "update_application": {
+    "id": null,
+    "appId": null,
+    "displayName": null,
+    "createdDateTime": null,
+    "signInAudience": null,
+    "publisherDomain": null,
+    "tags": null,
+    "appRoleAssignments": [
+      {
+        "id": null,
+        "createdDateTime": null,
+        "appRoleId": null,
+        "principalDisplayName": null,
+        "principalId": null,
+        "principalType": null,
+        "resourceDisplayName": null,
+        "resourceId": null
+      }
+    ],
+    "oauth2PermissionGrants": [
+      {
+        "id": null,
+        "clientId": null,
+        "consentType": null,
+        "principalId": null,
+        "resourceId": null,
+        "scope": null
+      }
+    ]
+  },
+  "update_group": {
+    "id": null,
+    "displayName": null,
+    "mail": null,
+    "mailNickname": null,
+    "description": null,
+    "groupTypes": null,
+    "securityEnabled": null,
+    "mailEnabled": null,
+    "visibility": null,
+    "createdDateTime": null
+  },
+  "update_service_principal": {
+    "id": null,
+    "appId": null,
+    "displayName": null,
+    "createdDateTime": null,
+    "accountEnabled": null,
+    "appOwnerOrganizationId": null,
+    "tags": null,
+    "appRoleAssignments": [
+      {
+        "id": null,
+        "createdDateTime": null,
+        "appRoleId": null,
+        "principalDisplayName": null,
+        "principalId": null,
+        "principalType": null,
+        "resourceDisplayName": null,
+        "resourceId": null
+      }
+    ],
+    "oauth2PermissionGrants": [
+      {
+        "id": null,
+        "clientId": null,
+        "consentType": null,
+        "principalId": null,
+        "resourceId": null,
+        "scope": null
+      }
+    ]
+  }
+}

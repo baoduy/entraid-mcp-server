@@ -1,1 +1,1 @@
-"""Utility functions for the Microsoft Graph MCP Server.""" 
+"""Utility functions for the Microsoft Graph MCP Server."""

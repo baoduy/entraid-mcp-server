@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
+from conftest import input_schema, make_groups, make_users
 from fastmcp import Client
 from msgraph.generated.models.app_identity import AppIdentity
 from msgraph.generated.models.app_role_assignment import AppRoleAssignment
@@ -31,7 +32,6 @@ from msgraph.generated.models.user_identity import UserIdentity
 from msgraph_beta.generated.models.hardware_information import HardwareInformation
 from msgraph_beta.generated.models.managed_device import ManagedDevice
 
-from conftest import make_groups, make_users
 from msgraph_mcp_server import server
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -56,8 +56,11 @@ async def test_the_tool_list_does_not_change():
 
     listed = {
         tool.name: {
-            name: {"required": name in tool.inputSchema.get("required", []), "default": schema.get("default")}
-            for name, schema in tool.inputSchema["properties"].items()
+            name: {
+                "required": name in input_schema(tool).get("required", []),
+                "default": schema.get("default"),
+            }
+            for name, schema in input_schema(tool)["properties"].items()
         }
         for tool in tools
     }
@@ -76,7 +79,9 @@ def a_managed_device(user_id="7f3c9a"):
         operating_system="Windows",
         enrolled_date_time=WHEN,
         last_sync_date_time=WHEN,
-        hardware_information=HardwareInformation(serial_number="SN-0042", manufacturer="Contoso"),
+        hardware_information=HardwareInformation(
+            serial_number="SN-0042", manufacturer="Contoso"
+        ),
     )
 
 
@@ -87,14 +92,20 @@ def an_audit_entry():
         activity_display_name="Update user",
         additional_details=[KeyValue(key="UserType", value="Member")],
         initiated_by=AuditActivityInitiator(
-            user=UserIdentity(id="7f3c9a", display_name="Mai", user_principal_name="mai@contoso.com"),
+            user=UserIdentity(
+                id="7f3c9a", display_name="Mai", user_principal_name="mai@contoso.com"
+            ),
             app=AppIdentity(app_id="app-1", display_name="Portal"),
         ),
         target_resources=[
             TargetResource(
                 id="aoife",
                 display_name="Aoife",
-                modified_properties=[ModifiedProperty(display_name="JobTitle", old_value="a", new_value="b")],
+                modified_properties=[
+                    ModifiedProperty(
+                        display_name="JobTitle", old_value="a", new_value="b"
+                    )
+                ],
             )
         ],
     )
@@ -117,7 +128,9 @@ def a_sign_in():
 
 async def password_reset_with_a_generated_password(graph, ctx):
     graph.add_user("aoife@contoso.com")
-    return await server.reset_user_password_direct("aoife@contoso.com", ctx, generate_password=True)
+    return await server.reset_user_password_direct(
+        "aoife@contoso.com", ctx, generate_password=True
+    )
 
 
 async def user_search(graph, ctx):
@@ -142,11 +155,15 @@ async def group_member_list(graph, ctx):
 
 async def group_creation_when_the_name_already_exists(graph, ctx):
     graph.groups.items = make_groups(1)
-    return await server.create_group(ctx, {"displayName": "Group 0000", "mailNickname": "group0000"})
+    return await server.create_group(
+        ctx, {"displayName": "Group 0000", "mailNickname": "group0000"}
+    )
 
 
 async def group_mfa_report(graph, ctx):
-    graph.groups.by_group_id("all-staff").members.items = [User(id=graph.add_user("aoife@contoso.com").id)]
+    graph.groups.by_group_id("all-staff").members.items = [
+        User(id=graph.add_user("aoife@contoso.com").id)
+    ]
     return await server.get_group_mfa_status("all-staff", ctx)
 
 
@@ -172,9 +189,14 @@ async def sign_in_logs_by_user(graph, ctx):
 
 async def application_details(graph, ctx):
     graph.applications.by_application_id("payroll-sync-object").value = Application(
-        id="payroll-sync-object", app_id="payroll-sync-app", display_name="Payroll Sync", created_date_time=WHEN
+        id="payroll-sync-object",
+        app_id="payroll-sync-app",
+        display_name="Payroll Sync",
+        created_date_time=WHEN,
     )
-    graph.service_principals.items = [ServicePrincipal(id="payroll-sync-sp", app_id="payroll-sync-app")]
+    graph.service_principals.items = [
+        ServicePrincipal(id="payroll-sync-sp", app_id="payroll-sync-app")
+    ]
     sp = graph.service_principals.by_service_principal_id("payroll-sync-sp")
     sp.app_role_assignments.items = [AppRoleAssignment(id="assignment-1")]
     sp.oauth2_permission_grants.items = [OAuth2PermissionGrant(id="grant-1")]
@@ -182,12 +204,18 @@ async def application_details(graph, ctx):
 
 
 TOOLS = [
-    pytest.param(password_reset_with_a_generated_password, id="password reset with a generated password"),
+    pytest.param(
+        password_reset_with_a_generated_password,
+        id="password reset with a generated password",
+    ),
     pytest.param(user_search, id="user search"),
     pytest.param(group_list, id="group list"),
     pytest.param(group_search, id="group search"),
     pytest.param(group_member_list, id="group member list"),
-    pytest.param(group_creation_when_the_name_already_exists, id="group creation when the name already exists"),
+    pytest.param(
+        group_creation_when_the_name_already_exists,
+        id="group creation when the name already exists",
+    ),
     pytest.param(group_mfa_report, id="group MFA report"),
     pytest.param(managed_device_list, id="managed device list"),
     pytest.param(managed_devices_by_user, id="managed devices by user"),
@@ -202,4 +230,7 @@ async def test_results_keep_their_shape(graph, ctx, request, use_tool):
     result = await use_tool(graph, ctx)
 
     assert result
-    assert outline(result) == baseline("result_shapes_v0_3_0.json")[request.node.callspec.id]
+    assert (
+        outline(result)
+        == baseline("result_shapes_v0_3_0.json")[request.node.callspec.id]
+    )

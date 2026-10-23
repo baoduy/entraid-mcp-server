@@ -1,10 +1,10 @@
 """User text in Microsoft Graph filters and searches (DRK-2421 §5, DRK-2425 §7 and §6a D1–D2)."""
 
 import pytest
+from conftest import make_groups
 from msgraph.generated.models.application import Application
 from msgraph.generated.models.service_principal import ServicePrincipal
 
-from conftest import make_groups
 from msgraph_mcp_server import server
 
 
@@ -19,10 +19,14 @@ async def test_group_search_by_name_keeps_a_quote_in_the_value(graph, ctx):
     assert only_filter(graph, "groups") == "startswith(displayName,'O''Brien Team')"
 
 
-async def test_the_duplicate_name_check_when_creating_a_group_keeps_a_quote_in_the_value(graph, ctx):
+async def test_the_duplicate_name_check_when_creating_a_group_keeps_a_quote_in_the_value(
+    graph, ctx
+):
     graph.groups.items = make_groups(1)
 
-    await server.create_group(ctx, {"displayName": "O'Brien Team", "mailNickname": "obrienteam"})
+    await server.create_group(
+        ctx, {"displayName": "O'Brien Team", "mailNickname": "obrienteam"}
+    )
 
     assert only_filter(graph, "groups") == "displayName eq 'O''Brien Team'"
 
@@ -30,13 +34,18 @@ async def test_the_duplicate_name_check_when_creating_a_group_keeps_a_quote_in_t
 async def test_devices_by_operating_system_keep_a_quote_in_the_value(graph, ctx):
     await server.get_all_managed_devices(ctx, filter_os="Windows'11")
 
-    assert only_filter(graph, "deviceManagement/managedDevices") == "operatingSystem eq 'Windows''11'"
+    assert (
+        only_filter(graph, "deviceManagement/managedDevices")
+        == "operatingSystem eq 'Windows''11'"
+    )
 
 
 async def test_devices_by_user_keep_a_quote_in_the_value(graph, ctx):
     await server.get_managed_devices_by_user("7f3c'9a", ctx)
 
-    assert only_filter(graph, "deviceManagement/managedDevices") == "userId eq '7f3c''9a'"
+    assert (
+        only_filter(graph, "deviceManagement/managedDevices") == "userId eq '7f3c''9a'"
+    )
 
 
 async def test_audit_logs_by_user_keep_a_quote_in_the_value(graph, ctx, frozen_now):
@@ -59,7 +68,9 @@ async def test_sign_in_logs_by_user_keep_a_quote_in_the_value(graph, ctx, frozen
     )
 
 
-async def test_the_service_principal_lookup_in_application_details_keeps_a_quote_in_the_value(graph, ctx):
+async def test_the_service_principal_lookup_in_application_details_keeps_a_quote_in_the_value(
+    graph, ctx
+):
     graph.applications.by_application_id("app-object-1").value = Application(
         id="app-object-1", app_id="5d2e'41", display_name="Payroll Sync"
     )
@@ -73,7 +84,10 @@ async def test_the_service_principal_lookup_in_application_details_keeps_a_quote
 async def test_crafted_text_cannot_add_a_condition_to_a_group_search(graph, ctx):
     await server.search_groups_by_name("Finance' or 1 eq 1 or 'a' eq 'a", ctx)
 
-    assert only_filter(graph, "groups") == "startswith(displayName,'Finance'' or 1 eq 1 or ''a'' eq ''a')"
+    assert (
+        only_filter(graph, "groups")
+        == "startswith(displayName,'Finance'' or 1 eq 1 or ''a'' eq ''a')"
+    )
 
 
 @pytest.mark.parametrize(
@@ -84,13 +98,17 @@ async def test_crafted_text_cannot_add_a_condition_to_a_group_search(graph, ctx)
     ],
     ids=["double quotes", "backslash"],
 )
-async def test_user_search_keeps_quotes_and_backslashes_as_typed(graph, ctx, text, escaped):
+async def test_user_search_keeps_quotes_and_backslashes_as_typed(
+    graph, ctx, text, escaped
+):
     await server.search_users(text, ctx)
 
     [request] = graph.requests_to("users")
     assert request.search == [
-        f'("displayName:{escaped}" OR "mail:{escaped}" OR "userPrincipalName:{escaped}"'
-        f' OR "givenName:{escaped}" OR "surName:{escaped}" OR "otherMails:{escaped}")'
+        (
+            f'("displayName:{escaped}" OR "mail:{escaped}" OR "userPrincipalName:{escaped}"'
+            f' OR "givenName:{escaped}" OR "surName:{escaped}" OR "otherMails:{escaped}")'
+        )
     ]
 
 
@@ -107,9 +125,18 @@ async def test_user_search_keeps_quotes_and_backslashes_as_typed(graph, ctx, tex
         ("'x'", "'''x'''"),
         ("Finance' or 1 eq 1 or 'a' eq 'a", "'Finance'' or 1 eq 1 or ''a'' eq ''a'"),
     ],
-    ids=["empty", "no quote", "one quote", "several quotes", "quotes at both ends", "crafted condition"],
+    ids=[
+        "empty",
+        "no quote",
+        "one quote",
+        "several quotes",
+        "quotes at both ends",
+        "crafted condition",
+    ],
 )
-def test_odata_string_literal_wraps_the_value_once_and_doubles_each_quote(value, literal):
+def test_odata_string_literal_wraps_the_value_once_and_doubles_each_quote(
+    value, literal
+):
     from msgraph_mcp_server.utils.odata import odata_string_literal
 
     assert odata_string_literal(value) == literal

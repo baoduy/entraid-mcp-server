@@ -20,7 +20,6 @@ from __future__ import annotations
 import logging
 import os
 from pathlib import Path
-from typing import List, Optional
 
 from azure.core.credentials import TokenCredential
 from azure.identity import (
@@ -35,15 +34,17 @@ from msgraph_beta import GraphServiceClient as GraphBetaServiceClient
 logger = logging.getLogger(__name__)
 
 # Default scope for Microsoft Graph when using a TokenCredential.
-DEFAULT_GRAPH_SCOPES: List[str] = ["https://graph.microsoft.com/.default"]
+DEFAULT_GRAPH_SCOPES: list[str] = ["https://graph.microsoft.com/.default"]
 
 
-def _load_env_files() -> None:
+def load_env_files() -> None:
     """Load the first ``.env`` file found in the well-known locations.
 
     This is best-effort: if no file is found the caller's process
     environment is used as-is (which is the expected path when running
-    under ``az login`` with no secrets).
+    under ``az login`` with no secrets). A variable already set in the
+    process environment wins over the file. The server's ``main`` calls
+    this at start-up; importing the package loads nothing.
     """
     candidates = [
         Path(__file__).resolve().parent.parent.parent.parent / "config" / ".env",
@@ -63,10 +64,6 @@ def _load_env_files() -> None:
     logger.debug("No .env file found; relying on the current process environment")
 
 
-# Load env files once at import time so subclasses/consumers see the values.
-_load_env_files()
-
-
 class AuthenticationError(Exception):
     """Raised when Microsoft Graph authentication cannot be configured."""
 
@@ -80,7 +77,8 @@ class GraphAuthManager:
        via ``credential``.
     2. Client-secret credential if ``tenant_id``/``client_id``/``client_secret``
        are all supplied (or available via ``TENANT_ID``/``CLIENT_ID``/
-       ``CLIENT_SECRET`` environment variables).
+       ``CLIENT_SECRET`` environment variables, read when the credential is
+       first built rather than at construction).
     3. Certificate credential if ``tenant_id``/``client_id``/
        ``certificate_path`` are all supplied (with an optional password).
     4. :class:`~azure.identity.DefaultAzureCredential` – the preferred
@@ -90,36 +88,26 @@ class GraphAuthManager:
     def __init__(
         self,
         *,
-        credential: Optional[TokenCredential] = None,
-        tenant_id: Optional[str] = None,
-        client_id: Optional[str] = None,
-        client_secret: Optional[str] = None,
-        certificate_path: Optional[str] = None,
-        certificate_password: Optional[str] = None,
-        scopes: Optional[List[str]] = None,
+        credential: TokenCredential | None = None,
+        tenant_id: str | None = None,
+        client_id: str | None = None,
+        client_secret: str | None = None,
+        certificate_path: str | None = None,
+        certificate_password: str | None = None,
+        scopes: list[str] | None = None,
     ) -> None:
         self._explicit_credential = credential
 
-        self.tenant_id = tenant_id or os.environ.get("TENANT_ID") or os.environ.get("AZURE_TENANT_ID")
-        self.client_id = client_id or os.environ.get("CLIENT_ID") or os.environ.get("AZURE_CLIENT_ID")
-        self.client_secret = (
-            client_secret or os.environ.get("CLIENT_SECRET") or os.environ.get("AZURE_CLIENT_SECRET")
-        )
-        self.certificate_path = (
-            certificate_path
-            or os.environ.get("CERTIFICATE_PATH")
-            or os.environ.get("AZURE_CLIENT_CERTIFICATE_PATH")
-        )
-        self.certificate_password = (
-            certificate_password
-            or os.environ.get("CERTIFICATE_PWD")
-            or os.environ.get("AZURE_CLIENT_CERTIFICATE_PASSWORD")
-        )
+        self.tenant_id = tenant_id
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.certificate_path = certificate_path
+        self.certificate_password = certificate_password
 
         self.scopes = scopes or list(DEFAULT_GRAPH_SCOPES)
-        self._graph_client: Optional[GraphServiceClient] = None
-        self._beta_graph_client: Optional[GraphBetaServiceClient] = None
-        self._credential: Optional[TokenCredential] = None
+        self._graph_client: GraphServiceClient | None = None
+        self._beta_graph_client: GraphBetaServiceClient | None = None
+        self._credential: TokenCredential | None = None
 
     # ------------------------------------------------------------------
     # Credential selection
@@ -129,21 +117,43 @@ class GraphAuthManager:
             logger.info("Using caller-supplied TokenCredential")
             return self._explicit_credential
 
-        if self.tenant_id and self.client_id and self.client_secret:
-            logger.info("Using ClientSecretCredential (tenant_id/client_id/client_secret)")
+        # Read the environment only now, after start-up has loaded the settings file.
+        env = os.environ.get
+        tenant_id = self.tenant_id or env("TENANT_ID") or env("AZURE_TENANT_ID")
+        client_id = self.client_id or env("CLIENT_ID") or env("AZURE_CLIENT_ID")
+        client_secret = (
+            self.client_secret or env("CLIENT_SECRET") or env("AZURE_CLIENT_SECRET")
+        )
+        certificate_path = (
+            self.certificate_path
+            or env("CERTIFICATE_PATH")
+            or env("AZURE_CLIENT_CERTIFICATE_PATH")
+        )
+        certificate_password = (
+            self.certificate_password
+            or env("CERTIFICATE_PWD")
+            or env("AZURE_CLIENT_CERTIFICATE_PASSWORD")
+        )
+
+        if tenant_id and client_id and client_secret:
+            logger.info(
+                "Using ClientSecretCredential (tenant_id/client_id/client_secret)"
+            )
             return ClientSecretCredential(
-                tenant_id=self.tenant_id,
-                client_id=self.client_id,
-                client_secret=self.client_secret,
+                tenant_id=tenant_id,
+                client_id=client_id,
+                client_secret=client_secret,
             )
 
-        if self.tenant_id and self.client_id and self.certificate_path:
-            logger.info("Using CertificateCredential (tenant_id/client_id/certificate_path)")
+        if tenant_id and client_id and certificate_path:
+            logger.info(
+                "Using CertificateCredential (tenant_id/client_id/certificate_path)"
+            )
             return CertificateCredential(
-                tenant_id=self.tenant_id,
-                client_id=self.client_id,
-                certificate_path=self.certificate_path,
-                password=self.certificate_password,
+                tenant_id=tenant_id,
+                client_id=client_id,
+                certificate_path=certificate_path,
+                password=certificate_password,
             )
 
         logger.info(

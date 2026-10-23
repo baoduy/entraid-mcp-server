@@ -18,20 +18,32 @@ def payroll_sync_exists(graph):
     )
 
 
-async def test_application_details_include_the_service_principals_assignments_and_grants(graph, ctx):
+async def test_application_details_include_the_service_principals_assignments_and_grants(
+    graph, ctx
+):
     payroll_sync_exists(graph)
-    graph.service_principals.items = [ServicePrincipal(id="payroll-sync-sp", app_id=PAYROLL_SYNC_APP_ID)]
+    graph.service_principals.items = [
+        ServicePrincipal(id="payroll-sync-sp", app_id=PAYROLL_SYNC_APP_ID)
+    ]
     sp = graph.service_principals.by_service_principal_id("payroll-sync-sp")
-    sp.app_role_assignments.items = [AppRoleAssignment(id="assignment-1"), AppRoleAssignment(id="assignment-2")]
+    sp.app_role_assignments.items = [
+        AppRoleAssignment(id="assignment-1"),
+        AppRoleAssignment(id="assignment-2"),
+    ]
     sp.oauth2_permission_grants.items = [OAuth2PermissionGrant(id="grant-1")]
 
     details = await server.get_application_by_id(PAYROLL_SYNC, ctx)
 
-    assert [a["id"] for a in details["appRoleAssignments"]] == ["assignment-1", "assignment-2"]
+    assert [a["id"] for a in details["appRoleAssignments"]] == [
+        "assignment-1",
+        "assignment-2",
+    ]
     assert [g["id"] for g in details["oauth2PermissionGrants"]] == ["grant-1"]
 
 
-async def test_application_details_without_a_service_principal_have_empty_assignments_and_grants(graph, ctx):
+async def test_application_details_without_a_service_principal_have_empty_assignments_and_grants(
+    graph, ctx
+):
     payroll_sync_exists(graph)
 
     details = await server.get_application_by_id(PAYROLL_SYNC, ctx)
@@ -41,7 +53,9 @@ async def test_application_details_without_a_service_principal_have_empty_assign
 
 
 def sign_ins(count):
-    return [SignIn(id=f"sign-in-{i:04d}", user_id="aoife@contoso.com") for i in range(count)]
+    return [
+        SignIn(id=f"sign-in-{i:04d}", user_id="aoife@contoso.com") for i in range(count)
+    ]
 
 
 async def test_sign_in_logs_cover_every_page_within_the_asked_days(graph, ctx):
