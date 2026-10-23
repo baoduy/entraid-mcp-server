@@ -5,6 +5,7 @@ Each test runs the server in a fresh interpreter on its own throwaway machine
 """
 
 import json
+import logging
 import re
 
 import pytest
@@ -78,25 +79,33 @@ def test_importing_the_server_leaves_the_logging_setup_alone(machine):
 
 
 def test_importing_the_server_writes_no_log_line(machine):
+    """A record at INFO or above from any logger fails, as does any record from the server's own
+    loggers (``msgraph_mcp_server.*``) or the root logger.
+
+    Only ``mcp.*`` and ``fastmcp.*`` records below INFO are tolerated: building the ``FastMCP``
+    object writes them, for example mcp's DEBUG ``Initializing server 'EntraID MCP Server'`` and
+    ``Registering handler for ListToolsRequest``.
+    """
     machine.settings_file(WORKING_CONFIG, TENANT_ID="contoso")
 
-    lines = machine.run_host(
+    records = machine.run_host(
         "import json, logging\n"
         "class Recorder(logging.Handler):\n"
-        "    lines = []\n"
+        "    records = []\n"
         "    def emit(self, record):\n"
-        "        self.lines.append(f'{record.name}: {record.getMessage()}')\n"
+        "        self.records.append([record.name, record.levelno, record.getMessage()])\n"
         "root = logging.getLogger()\n"
         "root.setLevel(logging.DEBUG)\n"
         "root.addHandler(Recorder())\n"
         "import msgraph_mcp_server.server\n"
-        "print(json.dumps(Recorder.lines))\n"
+        "print(json.dumps(Recorder.records))\n"
     )
 
-    # The server's own lines: its loggers and the root logger. Libraries it builds on may log their own setup.
-    assert [
-        line for line in lines if line.startswith(("msgraph_mcp_server", "root:"))
-    ] == []
+    def tolerated(name, level):
+        library = name.split(".")[0] in ("mcp", "fastmcp")
+        return library and level < logging.INFO
+
+    assert [r for r in records if not tolerated(r[0], r[1])] == []
 
 
 # -- Starting the server ------------------------------------------------------------------------

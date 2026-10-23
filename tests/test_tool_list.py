@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import pytest
+from conftest import input_schema
 from fastmcp import Client
 from server_process import MODERN_ENVELOPE, Machine
 
@@ -68,7 +69,7 @@ async def test_optional_inputs_can_still_be_left_empty(tool, input_name):
     async with Client(server.mcp) as client:
         listed = {t.name: t for t in await client.list_tools()}
 
-    schema = getattr(listed[tool], "input_schema", None) or listed[tool].inputSchema
+    schema = input_schema(listed[tool])
     assert input_name not in schema.get("required", [])
     assert may_be_left_empty(schema["properties"][input_name])
 

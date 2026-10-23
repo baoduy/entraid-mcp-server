@@ -18,6 +18,7 @@ from urllib.parse import parse_qs, urlparse
 import pytest
 from msgraph.generated.models.directory_object import DirectoryObject
 from msgraph.generated.models.group import Group
+from msgraph.generated.models.reference_create import ReferenceCreate
 from msgraph.generated.models.user import User
 
 from msgraph_mcp_server import server
@@ -94,12 +95,25 @@ class Collection:
         )
         return SimpleNamespace(value=self.items[start:end], odata_next_link=next_link)
 
+    async def post(self, body, request_configuration=None):
+        """Creates the object: Graph answers with it, under a new id when it has none."""
+        self._graph.requests.append(Request("post", self.path, body=body))
+        if body.id is None:
+            body.id = f"new-{len(self.items) + 1:04d}"
+        self.items.append(body)
+        self.by_id(body.id).value = body
+        return body
+
     def by_id(self, entity_id: str) -> "Entity":
         if entity_id not in self._entities:
             self._entities[entity_id] = Entity(self._graph, f"{self.path}/{entity_id}")
         return self._entities[entity_id]
 
     by_user_id = by_group_id = by_application_id = by_service_principal_id = by_id
+    by_directory_role_id = by_conditional_access_policy_id = by_managed_device_id = (
+        by_id
+    )
+    by_password_authentication_method_id = by_id
 
 
 class _NextPage:
@@ -123,7 +137,9 @@ class Members(Collection):
     """``/groups/{id}/members``: the member list plus the ``$ref`` calls msgraph-sdk offers on it.
 
     As in msgraph-sdk, ``by_directory_object_id(id)`` returns a builder with ``ref`` only: it has
-    no ``get``. Graph's refusals are kept: adding a member twice and removing a non-member fail.
+    no ``get``. ``ref.post`` takes the body msgraph-sdk types it with and Graph documents for
+    ``POST /groups/{id}/members/$ref``: a ``ReferenceCreate`` whose ``@odata.id`` names
+    ``https://graph.microsoft.com/v1.0/directoryObjects/{id}``; any other body is refused. Graph's refusals are kept: adding a member twice and removing a non-member fail.
     ``$filter`` is evaluated for ``id eq '<id>'`` only; any other filter is refused, never ignored.
     """
 
@@ -178,10 +194,15 @@ class _MembersRef:
         self._members._graph.requests.append(
             Request("post", f"{self._members.path}/$ref", body=body)
         )
-        odata_id = getattr(body, "odata_id", None)
-        member_id = (
-            odata_id.rsplit("/", 1)[-1] if odata_id else getattr(body, "id", None)
-        )
+        prefix = f"{GRAPH_ROOT}/directoryObjects/"
+        if not isinstance(body, ReferenceCreate) or not (
+            body.odata_id or ""
+        ).startswith(prefix):
+            raise GraphError(
+                "Request_BadRequest: the request body must be a reference with an "
+                f"'@odata.id' of the form '{prefix}{{id}}'."
+            )
+        member_id = body.odata_id[len(prefix) :]
         if member_id in self._members.ids():
             raise GraphError(
                 "Request_BadRequest: One or more added object references already exist "
@@ -217,6 +238,25 @@ class _MemberRef:
         ]
 
 
+class Owners(Collection):
+    """``/groups/{id}/owners``: records owner ``$ref`` calls; owner bodies are not checked (outside DRK-2429)."""
+
+    def __init__(self, graph: "FakeGraph", path: str):
+        super().__init__(graph, path)
+        self.ref = SimpleNamespace(post=self._post_ref)
+
+    async def _post_ref(self, body, request_configuration=None):
+        self._graph.requests.append(Request("post", f"{self.path}/$ref", body=body))
+
+    def by_directory_object_id(self, owner_id: str):
+        async def delete(request_configuration=None):
+            self._graph.requests.append(
+                Request("delete", f"{self.path}/{owner_id}/$ref")
+            )
+
+        return SimpleNamespace(ref=SimpleNamespace(delete=delete))
+
+
 class Entity:
     """A single Graph object such as ``/users/{id}``, with its navigation collections."""
 
@@ -231,8 +271,22 @@ class Entity:
         self.oauth2_permission_grants = Collection(
             graph, f"{path}/oauth2PermissionGrants"
         )
+        self.owners = Owners(graph, f"{path}/owners")
+        self.member_of = Collection(graph, f"{path}/memberOf")
+        self.transitive_member_of = Collection(graph, f"{path}/transitiveMemberOf")
         self.authentication = SimpleNamespace(
-            methods=Collection(graph, f"{path}/authentication/methods")
+            methods=Collection(graph, f"{path}/authentication/methods"),
+            password_methods=Collection(
+                graph, f"{path}/authentication/passwordMethods"
+            ),
+        )
+        # Intune managed device relationships (beta).
+        self.detected_apps = Collection(graph, f"{path}/detectedApps")
+        self.device_compliance_policy_states = Collection(
+            graph, f"{path}/deviceCompliancePolicyStates"
+        )
+        self.device_configuration_states = Collection(
+            graph, f"{path}/deviceConfigurationStates"
         )
 
     async def get(self, request_configuration=None):
@@ -253,6 +307,10 @@ class Entity:
                 f"Request_BadRequest: The password '{password}' does not comply with the password policy."
             )
 
+    async def delete(self, request_configuration=None):
+        self._graph.requests.append(Request("delete", self.path))
+        self.value = None
+
 
 class FakeGraph:
     """Stands in for ``GraphClient``: serves both the v1.0 and the beta client."""
@@ -271,8 +329,21 @@ class FakeGraph:
             directory_audits=Collection(self, "auditLogs/directoryAudits"),
             sign_ins=Collection(self, "auditLogs/signIns"),
         )
+        self.directory_roles = Collection(self, "directoryRoles")
+        self.identity = SimpleNamespace(
+            conditional_access=SimpleNamespace(
+                policies=Collection(self, "identity/conditionalAccess/policies"),
+            ),
+        )
         self.device_management = SimpleNamespace(
             managed_devices=Collection(self, "deviceManagement/managedDevices"),
+            device_compliance_policies=Collection(
+                self, "deviceManagement/deviceCompliancePolicies"
+            ),
+            device_configurations=Collection(
+                self, "deviceManagement/deviceConfigurations"
+            ),
+            device_categories=Collection(self, "deviceManagement/deviceCategories"),
         )
 
     def get_client(self) -> "FakeGraph":
@@ -355,6 +426,12 @@ def make_users(count: int, prefix: str = "user") -> list[User]:
         )
         for i in range(count)
     ]
+
+
+def input_schema(tool) -> dict:
+    """A listed tool's input schema: ``input_schema`` on mcp 2.x, ``inputSchema`` before it."""
+    schema = getattr(tool, "input_schema", None)
+    return schema if schema is not None else tool.inputSchema
 
 
 class FakeContext:

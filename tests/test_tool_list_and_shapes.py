@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
-from conftest import make_groups, make_users
+from conftest import input_schema, make_groups, make_users
 from fastmcp import Client
 from msgraph.generated.models.app_identity import AppIdentity
 from msgraph.generated.models.app_role_assignment import AppRoleAssignment
@@ -57,10 +57,10 @@ async def test_the_tool_list_does_not_change():
     listed = {
         tool.name: {
             name: {
-                "required": name in tool.inputSchema.get("required", []),
+                "required": name in input_schema(tool).get("required", []),
                 "default": schema.get("default"),
             }
-            for name, schema in tool.inputSchema["properties"].items()
+            for name, schema in input_schema(tool)["properties"].items()
         }
         for tool in tools
     }

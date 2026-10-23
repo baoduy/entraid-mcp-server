@@ -4,6 +4,8 @@ import random
 import string
 
 import pytest
+from fastmcp import Client
+from fastmcp.exceptions import ToolError
 
 from msgraph_mcp_server import server
 
@@ -21,15 +23,27 @@ async def reset(ctx, **kwargs):
     return await server.reset_user_password_direct(AOIFE, ctx, **kwargs)
 
 
+async def reset_through_an_mcp_client(ctx, **kwargs):
+    """Calls the tool as an AI client does; its error notifications land in ``ctx.errors``."""
+
+    async def on_log(message):
+        if message.level == "error":
+            data = message.data
+            ctx.errors.append(data["msg"] if isinstance(data, dict) else data)
+
+    async with Client(server.mcp, log_handler=on_log) as client:
+        await client.call_tool(
+            "reset_user_password_direct", {"user_id": AOIFE, **kwargs}
+        )
+
+
 async def reset_expecting(graph_refuses, ctx, caplog, **kwargs):
     if graph_refuses:
-        with pytest.raises(Exception, match="does not comply with the password policy"):
-            await reset(ctx, **kwargs)
+        with pytest.raises(ToolError, match="does not comply with the password policy"):
+            await reset_through_an_mcp_client(ctx, **kwargs)
         # The refusal is logged, so the absence check below reads a real error line.
-        assert [
-            r
-            for r in caplog.records
-            if r.levelname == "ERROR" and AOIFE in r.getMessage()
+        assert "Error calling tool 'reset_user_password_direct'" in [
+            r.getMessage() for r in caplog.records if r.levelname == "ERROR"
         ]
     else:
         await reset(ctx, **kwargs)

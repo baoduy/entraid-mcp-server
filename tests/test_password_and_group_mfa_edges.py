@@ -82,10 +82,9 @@ async def test_a_refused_member_list_reaches_the_client_as_an_error(
     assert ctx.errors == [
         f"Error fetching group MFA status for {ALL_STAFF}: Authorization_RequestDenied: Insufficient privileges"
     ]
-    assert (
-        f"Error fetching group MFA status for group {ALL_STAFF}: Authorization_RequestDenied: Insufficient privileges"
-        in [r.getMessage() for r in caplog.records]
-    )
+    # DRK-2429 R1: neither the tool nor the resource logs the failure. The one error record is
+    # fastmcp's, written when an MCP client calls the tool (test_tool_errors.py).
+    assert [r.getMessage() for r in caplog.records if r.levelname == "ERROR"] == []
 
 
 async def test_an_unreadable_member_is_logged_with_the_graph_error(graph, ctx, caplog):
@@ -100,7 +99,7 @@ async def test_an_unreadable_member_is_logged_with_the_graph_error(graph, ctx, c
     )
 
 
-async def test_a_refused_reset_logs_the_error_type_only(graph, ctx, caplog):
+async def test_a_refused_reset_writes_no_error_line_of_its_own(graph, ctx, caplog):
     graph.add_user(AOIFE)
     graph.users.by_user_id(AOIFE).refuse_patch = True
 
@@ -109,6 +108,5 @@ async def test_a_refused_reset_logs_the_error_type_only(graph, ctx, caplog):
             AOIFE, ctx, password="Sp!ce-Harbor-2026"
         )
 
-    assert f"Error directly resetting password for user {AOIFE}: GraphError" in [
-        r.getMessage() for r in caplog.records
-    ]
+    # DRK-2429 R1: the one error record of a failed call is fastmcp's (test_password_client_log.py).
+    assert [r.getMessage() for r in caplog.records if r.levelname == "ERROR"] == []
