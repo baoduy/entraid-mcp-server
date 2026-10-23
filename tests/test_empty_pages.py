@@ -32,7 +32,8 @@ class Pages:
 
 
 async def test_a_group_list_reads_on_past_an_empty_page(graph, ctx):
-    graph.groups = Pages([], make_groups(3))
+    first, second, third = make_groups(3)
+    graph.groups = Pages([first], [], [second, third])
 
     result = await server.get_all_groups(ctx, limit=5)
 
@@ -40,7 +41,8 @@ async def test_a_group_list_reads_on_past_an_empty_page(graph, ctx):
 
 
 async def test_sign_in_logs_read_on_past_an_empty_page(graph, ctx):
-    graph.audit_logs.sign_ins = Pages([], sign_ins(3))
+    first, second, third = sign_ins(3)
+    graph.audit_logs.sign_ins = Pages([first], [], [second, third])
 
     logs = await server.get_user_sign_ins("aoife@contoso.com", ctx, days=7)
 
