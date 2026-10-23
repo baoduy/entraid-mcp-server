@@ -239,7 +239,7 @@ class _MemberRef:
 
 
 class Owners(Collection):
-    """``/groups/{id}/owners``: records owner ``$ref`` calls; owner bodies are not checked (outside DRK-2429)."""
+    """``/groups/{id}/owners``: records owner ``$ref`` calls; an add must post a reference body."""
 
     def __init__(self, graph: "FakeGraph", path: str):
         super().__init__(graph, path)
@@ -247,6 +247,14 @@ class Owners(Collection):
 
     async def _post_ref(self, body, request_configuration=None):
         self._graph.requests.append(Request("post", f"{self.path}/$ref", body=body))
+        prefix = f"{GRAPH_ROOT}/directoryObjects/"
+        if not isinstance(body, ReferenceCreate) or not (
+            body.odata_id or ""
+        ).startswith(prefix):
+            raise GraphError(
+                "Request_BadRequest: the request body must be a reference with an "
+                f"'@odata.id' of the form '{prefix}{{id}}'."
+            )
 
     def by_directory_object_id(self, owner_id: str):
         async def delete(request_configuration=None):
