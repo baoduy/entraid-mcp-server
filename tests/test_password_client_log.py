@@ -25,6 +25,6 @@ async def test_a_refused_reset_through_the_mcp_client_keeps_the_password_out_of_
         "Error calling tool 'reset_user_password_direct': "
         "Request_BadRequest: The password '***' does not comply with the password policy."
     )
-    assert "Error calling tool 'reset_user_password_direct'" in caplog.text
+    assert "Error calling tool 'reset_user_password_direct'" in [r.getMessage() for r in caplog.records]
     assert SUPPLIED not in caplog.text
     assert SUPPLIED not in str(refusal.value)
