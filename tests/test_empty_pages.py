@@ -1,10 +1,13 @@
-"""A page with no items that still links to the next page (DRK-2425 §3 rows 5 and 6)."""
+"""Paging edges the acceptance tests leave open (DRK-2425 §3 rows 5 and 6): empty pages, no body, a limit of 1."""
 
 from types import SimpleNamespace
+
+import pytest
 
 from conftest import make_groups
 from msgraph_mcp_server import server
 from test_application_details_and_sign_ins import sign_ins
+from test_paging import TOOLS
 
 
 class Pages:
@@ -42,3 +45,24 @@ async def test_sign_in_logs_read_on_past_an_empty_page(graph, ctx):
     logs = await server.get_user_sign_ins("aoife@contoso.com", ctx, days=7)
 
     assert [log["id"] for log in logs] == ["sign-in-0000", "sign-in-0001", "sign-in-0002"]
+
+
+async def test_a_group_list_with_no_body_from_microsoft_graph_is_empty(graph, ctx):
+    graph.groups.respond_none = True
+
+    assert await server.get_all_groups(ctx, limit=5) == []
+
+
+async def test_sign_in_logs_with_no_body_from_microsoft_graph_are_empty(graph, ctx):
+    graph.audit_logs.sign_ins.respond_none = True
+
+    assert await server.get_user_sign_ins("aoife@contoso.com", ctx, days=7) == []
+
+
+@pytest.mark.parametrize("tool, tenant_has", TOOLS)
+async def test_a_limit_of_1_returns_one_item(graph, ctx, tool, tenant_has):
+    tenant_has(graph, 300)
+
+    result = await tool(ctx, 1)
+
+    assert len(result) == 1
