@@ -5,8 +5,11 @@ This module provides access to Microsoft Graph service principal resources.
 
 import logging
 from typing import Dict, List, Any, Optional
+from kiota_abstractions.base_request_configuration import RequestConfiguration
 from ..utils.graph_client import GraphClient
+from ..utils.odata import odata_string_literal
 from msgraph.generated.models.service_principal import ServicePrincipal
+from msgraph.generated.service_principals.service_principals_request_builder import ServicePrincipalsRequestBuilder
 
 logger = logging.getLogger(__name__)
 
@@ -45,8 +48,11 @@ async def get_service_principal_by_app_id(graph_client: GraphClient, app_id: str
     try:
         client = graph_client.get_client()
         # Filter by appId
-        filter_query = f"appId eq '{app_id}'"
-        response = await client.service_principals.get(query_parameters={"$filter": filter_query})
+        query_params = ServicePrincipalsRequestBuilder.ServicePrincipalsRequestBuilderGetQueryParameters(
+            filter=f"appId eq {odata_string_literal(app_id)}"
+        )
+        request_configuration = RequestConfiguration(query_parameters=query_params)
+        response = await client.service_principals.get(request_configuration=request_configuration)
         if response and response.value:
             return response.value[0]  # Return the first match
         return None

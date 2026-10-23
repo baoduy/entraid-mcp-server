@@ -4,32 +4,51 @@ This module provides access to Microsoft Graph group resources.
 """
 
 import logging
-from typing import Dict, List, Any, Optional
+from typing import Any, Callable, Dict, List, Optional
+from kiota_abstractions.base_request_configuration import RequestConfiguration
 from msgraph.generated.groups.groups_request_builder import GroupsRequestBuilder
+from msgraph.generated.groups.item.members.members_request_builder import MembersRequestBuilder
 from msgraph.generated.models.group import Group
 from msgraph.generated.models.directory_object import DirectoryObject
 from ..utils.graph_client import GraphClient
+from ..utils.odata import odata_string_literal
 
 logger = logging.getLogger(__name__)
 
+# Largest $top Microsoft Graph accepts on /groups and /groups/{id}/members.
+MAX_PAGE_SIZE = 999
+
+
+async def _collect_up_to(response: Any, next_page: Callable[[str], Any], limit: int) -> List[Any]:
+    """Collect up to ``limit`` items from a paged Graph response.
+
+    ``next_page`` is a callable taking an ``odata_next_link`` and returning a
+    request builder; next links are followed only while fewer than ``limit``
+    items are held.
+    """
+    items: List[Any] = []
+    if response and response.value:
+        items.extend(response.value)
+    while response is not None and getattr(response, 'odata_next_link', None) and len(items) < limit:
+        response = await next_page(response.odata_next_link).get()
+        if response and response.value:
+            items.extend(response.value)
+    return items[:limit]
+
+
 async def get_all_groups(graph_client: GraphClient, limit: int = 100) -> List[Dict[str, Any]]:
     """Get all groups (up to the specified limit, with paging)."""
+    if limit <= 0:
+        return []
     try:
         client = graph_client.get_client()
-        query_params = GroupsRequestBuilder.GroupsRequestBuilderGetQueryParameters(top=limit)
-        request_configuration = GroupsRequestBuilder.GroupsRequestBuilderGetRequestConfiguration(query_parameters=query_params)
+        query_params = GroupsRequestBuilder.GroupsRequestBuilderGetQueryParameters(top=min(limit, MAX_PAGE_SIZE))
+        request_configuration = RequestConfiguration(query_parameters=query_params)
         response = await client.groups.get(request_configuration=request_configuration)
-        groups = []
-        if response and response.value:
-            groups.extend(response.value)
-        # Paging: fetch more if odata_next_link is present
-        while response is not None and getattr(response, 'odata_next_link', None):
-            response = await client.groups.with_url(response.odata_next_link).get()
-            if response and response.value:
-                groups.extend(response.value)
+        groups = await _collect_up_to(response, client.groups.with_url, limit)
         # Format output
         formatted_groups = []
-        for group in groups[:limit]:
+        for group in groups:
             group_data = {
                 'id': group.id,
                 'displayName': group.display_name,
@@ -74,24 +93,19 @@ async def get_group_by_id(graph_client: GraphClient, group_id: str) -> Optional[
 
 async def search_groups_by_name(graph_client: GraphClient, name: str, limit: int = 50) -> List[Dict[str, Any]]:
     """Search for groups by display name (case-insensitive, partial match, with paging)."""
+    if limit <= 0:
+        return []
     try:
         client = graph_client.get_client()
-        filter_query = f"startswith(displayName,'{name}')"
+        filter_query = f"startswith(displayName,{odata_string_literal(name)})"
         query_params = GroupsRequestBuilder.GroupsRequestBuilderGetQueryParameters(
-            filter=filter_query, top=limit
+            filter=filter_query, top=min(limit, MAX_PAGE_SIZE)
         )
-        request_configuration = GroupsRequestBuilder.GroupsRequestBuilderGetRequestConfiguration(query_parameters=query_params)
+        request_configuration = RequestConfiguration(query_parameters=query_params)
         response = await client.groups.get(request_configuration=request_configuration)
-        groups = []
-        if response and response.value:
-            groups.extend(response.value)
-        # Paging
-        while response is not None and getattr(response, 'odata_next_link', None):
-            response = await client.groups.with_url(response.odata_next_link).get()
-            if response and response.value:
-                groups.extend(response.value)
+        groups = await _collect_up_to(response, client.groups.with_url, limit)
         formatted_groups = []
-        for group in groups[:limit]:
+        for group in groups:
             group_data = {
                 'id': group.id,
                 'displayName': group.display_name,
@@ -111,19 +125,17 @@ async def search_groups_by_name(graph_client: GraphClient, name: str, limit: int
 
 async def get_group_members(graph_client: GraphClient, group_id: str, limit: int = 100) -> List[Dict[str, Any]]:
     """Get members of a group by group ID (up to the specified limit, with paging)."""
+    if limit <= 0:
+        return []
     try:
         client = graph_client.get_client()
-        members_response = await client.groups.by_group_id(group_id).members.get()
-        members = []
-        if members_response and members_response.value:
-            members.extend(members_response.value)
-        # Paging
-        while members_response is not None and getattr(members_response, 'odata_next_link', None):
-            members_response = await client.groups.by_group_id(group_id).members.with_url(members_response.odata_next_link).get()
-            if members_response and members_response.value:
-                members.extend(members_response.value)
+        members_builder = client.groups.by_group_id(group_id).members
+        query_params = MembersRequestBuilder.MembersRequestBuilderGetQueryParameters(top=min(limit, MAX_PAGE_SIZE))
+        request_configuration = RequestConfiguration(query_parameters=query_params)
+        members_response = await members_builder.get(request_configuration=request_configuration)
+        members = await _collect_up_to(members_response, members_builder.with_url, limit)
         formatted_members = []
-        for member in members[:limit]:
+        for member in members:
             member_data = {
                 'id': getattr(member, 'id', None),
                 'displayName': getattr(member, 'display_name', None),
@@ -162,7 +174,7 @@ async def create_group(graph_client: GraphClient, group_data: Dict[str, Any]) ->
         
         if display_name:
             # Check if a group with the same display name already exists
-            filter_query = f"displayName eq '{display_name}'"
+            filter_query = f"displayName eq {odata_string_literal(display_name)}"
             query_params = GroupsRequestBuilder.GroupsRequestBuilderGetQueryParameters(
                 filter=filter_query
             )

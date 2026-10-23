@@ -11,6 +11,7 @@ from msgraph.generated.audit_logs.sign_ins.sign_ins_request_builder import SignI
 from kiota_abstractions.base_request_configuration import RequestConfiguration
 
 from ..utils.graph_client import GraphClient
+from ..utils.odata import odata_string_literal
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +38,7 @@ async def get_user_sign_in_logs(graph_client: GraphClient, user_id: str, days: i
         end_date_str = end_date.strftime('%Y-%m-%dT%H:%M:%SZ')
         
         # Define the OData filter query with proper formatting
-        filter_query = f"createdDateTime ge {start_date_str} and createdDateTime le {end_date_str} and userId eq '{user_id}'"
+        filter_query = f"createdDateTime ge {start_date_str} and createdDateTime le {end_date_str} and userId eq {odata_string_literal(user_id)}"
         
         logger.info(f"Fetching sign-in logs for user ID: {user_id}")
         logger.info(f"Date range: {start_date_str} to {end_date_str}")
@@ -57,13 +58,20 @@ async def get_user_sign_in_logs(graph_client: GraphClient, user_id: str, days: i
         request_configuration.headers.add("ConsistencyLevel", "eventual")
         
         # Execute the request
-        sign_ins = await client.audit_logs.sign_ins.get(request_configuration=request_configuration)
+        response = await client.audit_logs.sign_ins.get(request_configuration=request_configuration)
+        sign_ins = []
+        if response and response.value:
+            sign_ins.extend(response.value)
+        while response is not None and getattr(response, 'odata_next_link', None):
+            response = await client.audit_logs.sign_ins.with_url(response.odata_next_link).get(request_configuration=request_configuration)
+            if response and response.value:
+                sign_ins.extend(response.value)
 
         formatted_logs = []
-        if sign_ins and sign_ins.value:
-            logger.info(f"Found {len(sign_ins.value)} sign-in records")
+        if sign_ins:
+            logger.info(f"Found {len(sign_ins)} sign-in records")
             
-            for log in sign_ins.value:
+            for log in sign_ins:
                 # Format each log entry with comprehensive fields
                 log_data = {
                     "id": log.id,

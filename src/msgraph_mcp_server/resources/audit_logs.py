@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 from msgraph.generated.audit_logs.directory_audits.directory_audits_request_builder import DirectoryAuditsRequestBuilder
 from kiota_abstractions.base_request_configuration import RequestConfiguration
 from ..utils.graph_client import GraphClient
+from ..utils.odata import odata_string_literal
 
 logger = logging.getLogger(__name__)
 
@@ -15,8 +16,8 @@ async def get_user_audit_logs(graph_client: GraphClient, user_id: str, days: int
         start_date = end_date - timedelta(days=days)
         start_date_str = start_date.strftime('%Y-%m-%dT%H:%M:%SZ')
         end_date_str = end_date.strftime('%Y-%m-%dT%H:%M:%SZ')
-        # Filter: initiatedBy/user/id eq '{user_id}' and activityDateTime in range
-        filter_query = f"initiatedBy/user/id eq '{user_id}' and activityDateTime ge {start_date_str} and activityDateTime le {end_date_str}"
+        # Filter: initiatedBy/user/id eq <user_id literal> and activityDateTime in range
+        filter_query = f"initiatedBy/user/id eq {odata_string_literal(user_id)} and activityDateTime ge {start_date_str} and activityDateTime le {end_date_str}"
         logger.info(f"Fetching directory audit logs for user ID: {user_id}")
         logger.info(f"Date range: {start_date_str} to {end_date_str}")
         logger.info(f"Filter query: {filter_query}")

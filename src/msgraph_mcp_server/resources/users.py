@@ -13,6 +13,7 @@ from msgraph.generated.directory_roles.item.directory_role_item_request_builder 
 from msgraph.generated.directory_roles.item.members.members_request_builder import MembersRequestBuilder
 
 from ..utils.graph_client import GraphClient
+from ..utils.odata import graph_search_escape
 
 logger = logging.getLogger(__name__)
 
@@ -20,10 +21,11 @@ async def search_users(graph_client: GraphClient, query: str, limit: int = 10) -
     """Search for users by name or email, with paging support."""
     try:
         client = graph_client.get_client()
+        term = graph_search_escape(query)
         # Create query parameters for the search
         query_params = UsersRequestBuilder.UsersRequestBuilderGetQueryParameters(
             search=[
-                f'(\"displayName:{query}\" OR \"mail:{query}\" OR \"userPrincipalName:{query}\" OR \"givenName:{query}\" OR \"surName:{query}\" OR \"otherMails:{query}\")'
+                f'(\"displayName:{term}\" OR \"mail:{term}\" OR \"userPrincipalName:{term}\" OR \"givenName:{term}\" OR \"surName:{term}\" OR \"otherMails:{term}\")'
             ],
             top=limit
         )
