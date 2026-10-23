@@ -1,1 +1,1 @@
-"""Authentication module for Microsoft Graph API.""" 
+"""Authentication module for Microsoft Graph API."""

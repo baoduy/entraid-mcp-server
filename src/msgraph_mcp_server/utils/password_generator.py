@@ -30,7 +30,9 @@ def generate_secure_password(length: int = 12) -> str:
         )
 
     combined = DIGITS + UPPERCASE + LOWERCASE + SYMBOLS
-    chars = [secrets.choice(charset) for charset in (DIGITS, UPPERCASE, LOWERCASE, SYMBOLS)]
+    chars = [
+        secrets.choice(charset) for charset in (DIGITS, UPPERCASE, LOWERCASE, SYMBOLS)
+    ]
     chars += [secrets.choice(combined) for _ in range(length - len(chars))]
     # Shuffle so the four guaranteed characters do not sit at the start.
     secrets.SystemRandom().shuffle(chars)
