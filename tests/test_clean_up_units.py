@@ -10,8 +10,9 @@ import logging
 import runpy
 from types import SimpleNamespace
 
+import conftest
 import pytest
-from conftest import GraphError
+from conftest import GRAPH_ROOT, GraphError
 from msgraph.generated.models.application import Application
 from msgraph.generated.models.directory_role import DirectoryRole
 from msgraph.generated.models.group import Group
@@ -47,7 +48,27 @@ from msgraph_mcp_server.utils.graph_client import GraphClient
 async def test_a_listed_member_already_in_the_new_group_does_not_fail_the_creation(
     graph,
 ):
+    """Graph can put a member in a new group itself, e.g. its creator."""
+    members = graph.groups.by_group_id("new-0001").members
+    members.items = [User(id=AOIFE)]
+
     result = await groups.create_group(
+        graph,
+        {
+            "displayName": "All Staff",
+            "mailNickname": "allstaff",
+            "members": [AOIFE, "user-0001"],
+        },
+    )
+
+    assert result["id"] == "new-0001"
+    assert members.ids() == [AOIFE, "user-0001"]
+    [added] = graph.requests_to("groups/new-0001/members/$ref")
+    assert added.body.odata_id == f"{GRAPH_ROOT}/directoryObjects/user-0001"
+
+
+async def test_a_member_listed_twice_is_added_once(graph):
+    await groups.create_group(
         graph,
         {
             "displayName": "All Staff",
@@ -56,10 +77,7 @@ async def test_a_listed_member_already_in_the_new_group_does_not_fail_the_creati
         },
     )
 
-    assert result["id"] == "new-0001"
-    members = graph.groups.by_group_id("new-0001").members
-    assert members.ids() == ["user-0001", AOIFE]
-    assert len(graph.requests_to("groups/new-0001/members/$ref")) == 2
+    assert graph.groups.by_group_id("new-0001").members.ids() == ["user-0001", AOIFE]
     member_checks = [
         r for r in graph.requests_to("groups/new-0001/members") if r.method == "get"
     ]
@@ -121,6 +139,43 @@ async def test_the_membership_check_asks_graph_for_that_member_only(graph, monke
     assert check.query_parameters.filter == "id eq 'o''brien@contoso.com'"
     assert check.query_parameters.count is True
     assert check.headers.get("ConsistencyLevel") == {"eventual"}
+
+
+async def refuse(*args, **kwargs):
+    raise GraphError("Service unavailable")
+
+
+@pytest.mark.parametrize(
+    "tool, members_before, write, notification",
+    [
+        (
+            "add_group_member",
+            ["user-0001"],
+            (conftest._MembersRef, "post"),
+            f"Error adding member {AOIFE} to group {ALL_STAFF}: Service unavailable",
+        ),
+        (
+            "remove_group_member",
+            ["user-0001", AOIFE],
+            (conftest._MemberRef, "delete"),
+            f"Error removing member {AOIFE} from group {ALL_STAFF}: Service unavailable",
+        ),
+    ],
+    ids=["add", "remove"],
+)
+async def test_a_failed_member_write_fails_the_call(
+    graph, monkeypatch, tool, members_before, write, notification
+):
+    members = all_staff(graph, members_before)
+    monkeypatch.setattr(*write, refuse)
+
+    notifications, error_result = await call_once(
+        tool, {"group_id": ALL_STAFF, "member_id": AOIFE}
+    )
+
+    assert notifications == [notification]
+    assert error_result == f"Error calling tool '{tool}': Service unavailable"
+    assert members.ids() == members_before
 
 
 # -- D7: a ValueError on the member tools is sent as its own text --------------------------------
