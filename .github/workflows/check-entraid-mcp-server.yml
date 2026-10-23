@@ -1,0 +1,67 @@
+name: Check entraid-mcp-server
+
+on:
+  pull_request:
+    branches:
+      - dev
+  push:
+    branches:
+      - dev
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Build, tests and lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10.3.2
+        with:
+          version: latest
+          python-version: '3.12'
+
+      - name: Install locked dependencies including dev tools
+        run: uv sync --locked
+
+      - name: Build package
+        run: uv build
+
+      - name: Detect tests and Ruff configuration
+        id: checks
+        run: |
+          uv run --locked python - <<'PY'
+          import os
+          from pathlib import Path
+          import tomllib
+
+          config = tomllib.loads(Path("pyproject.toml").read_text())
+          tests = Path("tests").is_dir()
+          ruff = (
+              "ruff" in config.get("tool", {})
+              or Path("ruff.toml").is_file()
+              or Path(".ruff.toml").is_file()
+          )
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write(f"tests={str(tests).lower()}\n")
+              output.write(f"ruff={str(ruff).lower()}\n")
+          PY
+
+      - name: Run tests
+        if: steps.checks.outputs.tests == 'true'
+        run: uv run --locked pytest
+
+      - name: Check lint
+        if: steps.checks.outputs.ruff == 'true'
+        run: uv run --locked ruff check
+
+      - name: Check formatting
+        if: steps.checks.outputs.ruff == 'true'
+        run: uv run --locked ruff format --check
