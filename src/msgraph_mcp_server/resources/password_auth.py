@@ -100,5 +100,6 @@ async def reset_user_password_direct(graph_client: GraphClient, user_id: str, pa
             'message': 'Password has been reset using the direct method.'
         }
     except Exception as e:
-        logger.error(f"Error directly resetting password for user {user_id}: {str(e)}")
+        # The Graph error text can echo the password, so log only the exception type.
+        logger.error(f"Error directly resetting password for user {user_id}: {type(e).__name__}")
         raise 

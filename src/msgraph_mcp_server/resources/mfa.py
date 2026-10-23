@@ -4,7 +4,7 @@ This module provides access to Microsoft Graph MFA-related resources.
 """
 
 import logging
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Tuple
 
 from msgraph.generated.users.item.user_item_request_builder import UserItemRequestBuilder
 from kiota_abstractions.base_request_configuration import RequestConfiguration
@@ -12,6 +12,8 @@ from kiota_abstractions.base_request_configuration import RequestConfiguration
 from ..utils.graph_client import GraphClient
 
 logger = logging.getLogger(__name__)
+
+USER_ODATA_TYPE = "#microsoft.graph.user"
 
 async def get_mfa_status(graph_client: GraphClient, user_id: str) -> Dict[str, Any]:
     """Get MFA status and methods for a specific user.
@@ -96,38 +98,51 @@ async def get_mfa_status(graph_client: GraphClient, user_id: str) -> Dict[str, A
         logger.error(f"Error fetching MFA status for user {user_id}: {str(e)}")
         raise
 
-async def get_group_mfa_status(graph_client: GraphClient, group_id: str) -> List[Dict[str, Any]]:
-    """Get MFA status for all members of a group.
-    
+async def get_group_mfa_status(graph_client: GraphClient, group_id: str) -> Tuple[List[Dict[str, Any]], int, int]:
+    """Get MFA status for every user member of a group.
+
+    Reads every page of members. Members that are not users (devices, service
+    principals, groups, unknown types) are skipped; nested groups are not expanded.
+
     Args:
         graph_client: GraphClient instance
         group_id: The unique identifier of the group.
-        
+
     Returns:
-        A list of dictionaries containing MFA status for each group member.
+        A tuple of the MFA statuses that could be read, the number of user
+        members whose status could not be read, and the number of user members.
     """
     try:
         client = graph_client.get_client()
-        
-        # Get group members
-        members = await client.groups.by_group_id(group_id).members.get()
-        if not members or not members.value:
-            logger.warning(f"No members found in group {group_id}")
-            return []
-            
-        # Process each member's MFA status
+        members_builder = client.groups.by_group_id(group_id).members
+
+        users = []
+        page = await members_builder.get()
+        while page:
+            users += [m for m in page.value or [] if m.odata_type == USER_ODATA_TYPE]
+            if not page.odata_next_link:
+                break
+            page = await members_builder.with_url(page.odata_next_link).get()
+
+        if not users:
+            logger.warning(f"No user members found in group {group_id}")
+            return [], 0, 0
+
         mfa_statuses = []
-        for member in members.value:
+        unreadable = 0
+        for member in users:
             try:
                 mfa_status = await get_mfa_status(graph_client, member.id)
-                if mfa_status:
-                    mfa_statuses.append(mfa_status)
             except Exception as e:
                 logger.error(f"Error processing member {member.id}: {str(e)}")
-                continue
-                
-        return mfa_statuses
-        
+                mfa_status = None
+            if mfa_status:
+                mfa_statuses.append(mfa_status)
+            else:
+                unreadable += 1
+
+        return mfa_statuses, unreadable, len(users)
+
     except Exception as e:
         logger.error(f"Error fetching group MFA status for group {group_id}: {str(e)}")
-        raise 
+        raise

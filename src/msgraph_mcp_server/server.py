@@ -167,8 +167,10 @@ async def get_group_mfa_status(group_id: str, ctx: Context) -> List[Dict[str, An
     await ctx.info(f"Fetching MFA status for group {group_id}...")
     
     try:
-        results = await mfa.get_group_mfa_status(graph_client, group_id)
+        results, unreadable, user_count = await mfa.get_group_mfa_status(graph_client, group_id)
         await ctx.report_progress(progress=100, total=100)
+        if unreadable:
+            await ctx.warning(f"MFA status could not be read for {unreadable} of {user_count} members")
         if not results:
             await ctx.warning(f"No MFA data found for group {group_id}")
         return results
@@ -535,10 +537,15 @@ async def reset_user_password_direct(user_id: str, ctx: Context, password: str =
         await ctx.info(f"Password successfully reset for user {user_id} using the direct method")
         return result
     except Exception as e:
-        error_msg = f"Error directly resetting password for user {user_id}: {str(e)}"
+        # The Graph error text can echo the password: mask it before it reaches any log or the client.
+        error_text = str(e).replace(password, "***") if password else str(e)
+        error_msg = f"Error directly resetting password for user {user_id}: {error_text}"
         logger.error(error_msg)
         await ctx.error(error_msg)
-        raise
+        # A new exception without the original chain, so fastmcp's own error log and ToolError
+        # carry only the masked text. ValueError stays ValueError: it is the bad-input refusal.
+        masked = ValueError(error_text) if isinstance(e, ValueError) else RuntimeError(error_text)
+        raise masked from None
 
 @mcp.tool()
 async def suggest_permissions_for_task(task_category: str, task_name: str, ctx: Context) -> Dict[str, Any]:
