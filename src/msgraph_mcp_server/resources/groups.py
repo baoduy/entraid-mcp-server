@@ -12,7 +12,6 @@ from msgraph.generated.groups.groups_request_builder import GroupsRequestBuilder
 from msgraph.generated.groups.item.members.members_request_builder import (
     MembersRequestBuilder,
 )
-from msgraph.generated.models.directory_object import DirectoryObject
 from msgraph.generated.models.group import Group
 from msgraph.generated.models.reference_create import ReferenceCreate
 
@@ -488,12 +487,10 @@ async def add_group_owner(
     """
     client = graph_client.get_client()
 
-    # Create a reference to the directory object (owner)
-    directory_object = DirectoryObject()
-    directory_object.id = owner_id
-
-    # Add the owner to the group
-    await client.groups.by_group_id(group_id).owners.ref.post(directory_object)
+    reference = ReferenceCreate(
+        odata_id=f"https://graph.microsoft.com/v1.0/directoryObjects/{owner_id}"
+    )
+    await client.groups.by_group_id(group_id).owners.ref.post(reference)
 
     return True
 
