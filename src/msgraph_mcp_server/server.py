@@ -65,17 +65,16 @@ def _reports_errors(
             try:
                 return await tool(*args, **kwargs)
             except Exception as e:
-                arguments = signature.bind(*args, **kwargs)
-                arguments.apply_defaults()
+                arguments = signature.bind(*args, **kwargs).arguments
                 if auth_errors and isinstance(e, AuthenticationError):
                     text = f"Authentication error: {e}"
                 elif value_errors_as_is and isinstance(e, ValueError):
                     text = str(e)
                 else:
-                    text = f"{message.format(**arguments.arguments)}: {e}"
+                    text = f"{message.format(**arguments)}: {e}"
                     if denied_hint and "Authorization_RequestDenied" in str(e):
                         text += denied_hint
-                await arguments.arguments["ctx"].error(text)
+                await arguments["ctx"].error(text)
                 raise
 
         return run
