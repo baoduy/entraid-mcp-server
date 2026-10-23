@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - dev
     paths:
       - 'src/msgraph_mcp_server/**'
       - 'pyproject.toml'
@@ -15,6 +14,7 @@ on:
 
 jobs:
   publish:
+    if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -22,20 +22,21 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
           fetch-tags: true
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v2
+        uses: astral-sh/setup-uv@v10.3.2
         with:
           version: latest
+          enable-cache: false
 
       # Versioning
       - name: Calculate version
         id: version
-        uses: paulhatch/semantic-version@v5.4.0
+        uses: paulhatch/semantic-version@v6.0.2
         with:
           tag_prefix: "v"
           major_pattern: "(MAJOR)"
@@ -45,7 +46,7 @@ jobs:
           search_commit_body: false
 
       - name: Set NEXT_VERSION
-        run: echo "NEXT_VERSION=${{ steps.version.outputs.version }}" >> $GITHUB_ENV
+        run: echo "NEXT_VERSION=${{ steps.version.outputs.version }}" >> "$GITHUB_ENV"
 
       - name: Print the version
         run: 'echo "Next version: ${{ env.NEXT_VERSION }}"'
@@ -65,7 +66,7 @@ jobs:
 
       # Create Release
       - name: Release
-        uses: softprops/action-gh-release@v2.6.1
+        uses: softprops/action-gh-release@v3.0.3
         if: ${{ github.ref == 'refs/heads/main' }}
         continue-on-error: true
         with:
