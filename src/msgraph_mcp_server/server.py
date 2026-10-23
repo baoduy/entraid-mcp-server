@@ -11,6 +11,7 @@ from collections.abc import Awaitable, Callable
 from typing import Any
 
 from fastmcp import Context, FastMCP
+from mcp_types import ToolAnnotations
 
 from . import __version__
 from .auth.graph_auth import AuthenticationError, GraphAuthManager, load_env_files
@@ -32,6 +33,11 @@ from .utils.password_generator import generate_secure_password
 
 # Create an MCP server
 mcp = FastMCP("EntraID MCP Server", version=__version__)
+
+# MCP marks each tool carries, so an AI client can let lookups run and ask before a change.
+_READ_ONLY = ToolAnnotations(readOnlyHint=True)
+_ADDS = ToolAnnotations(readOnlyHint=False, destructiveHint=False)
+_DESTRUCTIVE = ToolAnnotations(readOnlyHint=False, destructiveHint=True)
 
 # Signs in on the first Microsoft Graph call, not here.
 graph_client = GraphClient(GraphAuthManager())
@@ -82,7 +88,7 @@ def _reports_errors(
     return decorate
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors("Error searching users", auth_errors=True)
 async def search_users(
     query: str, ctx: Context, limit: int = 10
@@ -101,7 +107,7 @@ async def search_users(
     return results
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors("Error fetching user {user_id}", auth_errors=True)
 async def get_user_by_id(user_id: str, ctx: Context) -> dict[str, Any] | None:
     """Get a specific user by their ID.
@@ -122,7 +128,7 @@ async def get_user_by_id(user_id: str, ctx: Context) -> dict[str, Any] | None:
     return result
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors(
     "Error fetching sign-in logs for {user_id}",
     auth_errors=True,
@@ -156,7 +162,7 @@ async def get_user_sign_ins(
     return logs
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors("Error fetching MFA status for {user_id}", auth_errors=True)
 async def get_user_mfa_status(user_id: str, ctx: Context) -> dict[str, Any] | None:
     """Get MFA status and methods for a specific user.
@@ -177,7 +183,7 @@ async def get_user_mfa_status(user_id: str, ctx: Context) -> dict[str, Any] | No
     return result
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors("Error fetching group MFA status for {group_id}", auth_errors=True)
 async def get_group_mfa_status(group_id: str, ctx: Context) -> list[dict[str, Any]]:
     """Get MFA status for all members of a group.
@@ -204,7 +210,7 @@ async def get_group_mfa_status(group_id: str, ctx: Context) -> list[dict[str, An
     return results
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors("Error fetching privileged users")
 async def get_privileged_users(ctx: Context) -> list[dict[str, Any]]:
     """Get all users who are members of privileged directory roles."""
@@ -214,7 +220,7 @@ async def get_privileged_users(ctx: Context) -> list[dict[str, Any]]:
     return privileged_users
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors("Error fetching conditional access policies")
 async def get_conditional_access_policies(ctx: Context) -> list[dict[str, Any]]:
     """Get all conditional access policies.
@@ -231,7 +237,7 @@ async def get_conditional_access_policies(ctx: Context) -> list[dict[str, Any]]:
     return policies
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors("Error fetching conditional access policy {policy_id}")
 async def get_conditional_access_policy_by_id(
     policy_id: str, ctx: Context
@@ -255,7 +261,7 @@ async def get_conditional_access_policy_by_id(
     return result
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors("Error fetching all groups")
 async def get_all_groups(ctx: Context, limit: int = 100) -> list[dict[str, Any]]:
     """Get all groups (up to the specified limit, with paging)."""
@@ -265,7 +271,7 @@ async def get_all_groups(ctx: Context, limit: int = 100) -> list[dict[str, Any]]
     return results
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors("Error fetching group {group_id}")
 async def get_group_by_id(group_id: str, ctx: Context) -> dict[str, Any] | None:
     """Get a specific group by its ID."""
@@ -277,7 +283,7 @@ async def get_group_by_id(group_id: str, ctx: Context) -> dict[str, Any] | None:
     return result
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors("Error searching groups by name")
 async def search_groups_by_name(
     name: str, ctx: Context, limit: int = 50
@@ -289,7 +295,7 @@ async def search_groups_by_name(
     return results
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors("Error fetching group members for group {group_id}")
 async def get_group_members(
     group_id: str, ctx: Context, limit: int = 100
@@ -301,7 +307,7 @@ async def get_group_members(
     return results
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors("Error fetching groups for user {user_id}")
 async def get_user_groups(user_id: str, ctx: Context) -> list[dict[str, Any]]:
     """Get all groups (including transitive memberships) for a user by user ID."""
@@ -311,7 +317,7 @@ async def get_user_groups(user_id: str, ctx: Context) -> list[dict[str, Any]]:
     return results
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors("Error fetching roles for user {user_id}")
 async def get_user_roles(user_id: str, ctx: Context) -> list[dict[str, Any]]:
     """Get all directory roles assigned to a user by user ID."""
@@ -321,7 +327,7 @@ async def get_user_roles(user_id: str, ctx: Context) -> list[dict[str, Any]]:
     return results
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors("Error fetching all managed devices")
 async def get_all_managed_devices(
     ctx: Context, filter_os: str | None = None
@@ -335,7 +341,7 @@ async def get_all_managed_devices(
     return results
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors("Error fetching managed devices for user {user_id}")
 async def get_managed_devices_by_user(
     user_id: str, ctx: Context
@@ -347,7 +353,7 @@ async def get_managed_devices_by_user(
     return results
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors("Error fetching managed device {device_id}")
 async def get_managed_device_by_id(
     device_id: str, ctx: Context
@@ -361,7 +367,7 @@ async def get_managed_device_by_id(
     return result
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors("Error fetching detected apps for device {device_id}")
 async def get_detected_apps_for_device(
     device_id: str, ctx: Context
@@ -375,7 +381,7 @@ async def get_detected_apps_for_device(
     return results
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors("Error fetching compliance policy states for device {device_id}")
 async def get_device_compliance_policy_states(
     device_id: str, ctx: Context
@@ -389,7 +395,7 @@ async def get_device_compliance_policy_states(
     return results
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors("Error fetching configuration states for device {device_id}")
 async def get_device_configuration_states(
     device_id: str, ctx: Context
@@ -403,7 +409,7 @@ async def get_device_configuration_states(
     return results
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors("Error fetching device compliance policies")
 async def get_device_compliance_policies(ctx: Context) -> list[dict[str, Any]]:
     """List all Intune device compliance policies (beta endpoint)."""
@@ -413,7 +419,7 @@ async def get_device_compliance_policies(ctx: Context) -> list[dict[str, Any]]:
     return results
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors("Error fetching device configurations")
 async def get_device_configurations(ctx: Context) -> list[dict[str, Any]]:
     """List all Intune device configuration profiles (beta endpoint)."""
@@ -423,7 +429,7 @@ async def get_device_configurations(ctx: Context) -> list[dict[str, Any]]:
     return results
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors("Error fetching device categories")
 async def get_device_categories(ctx: Context) -> list[dict[str, Any]]:
     """List all Intune device categories (beta endpoint)."""
@@ -433,7 +439,7 @@ async def get_device_categories(ctx: Context) -> list[dict[str, Any]]:
     return results
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors("Error fetching directory audit logs for user {user_id}")
 async def get_user_audit_logs(
     user_id: str, ctx: Context, days: int = 30
@@ -447,7 +453,7 @@ async def get_user_audit_logs(
     return results
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors("Error listing password methods for user {user_id}")
 async def list_user_password_methods(
     user_id: str, ctx: Context
@@ -459,7 +465,7 @@ async def list_user_password_methods(
     return results
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors("Error getting password method {method_id} for user {user_id}")
 async def get_user_password_method(
     user_id: str, method_id: str, ctx: Context
@@ -475,7 +481,7 @@ async def get_user_password_method(
     return result
 
 
-@mcp.tool()
+@mcp.tool(annotations=_DESTRUCTIVE)
 @_reports_errors("Error directly resetting password for user {user_id}")
 async def reset_user_password_direct(
     user_id: str,
@@ -539,7 +545,7 @@ async def reset_user_password_direct(
         raise masked from None
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors("Error suggesting permissions for task {task_category}/{task_name}")
 async def suggest_permissions_for_task(
     task_category: str, task_name: str, ctx: Context
@@ -553,7 +559,7 @@ async def suggest_permissions_for_task(
     return result
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors("Error listing permission categories and tasks")
 async def list_permission_categories_and_tasks(ctx: Context) -> dict[str, Any]:
     """List all available categories and tasks for permission suggestions."""
@@ -563,7 +569,7 @@ async def list_permission_categories_and_tasks(ctx: Context) -> dict[str, Any]:
     return result
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors("Error retrieving Microsoft Graph permissions")
 async def get_all_graph_permissions(ctx: Context) -> dict[str, Any]:
     """Get all Microsoft Graph permissions directly from the Microsoft Graph API."""
@@ -576,7 +582,7 @@ async def get_all_graph_permissions(ctx: Context) -> dict[str, Any]:
     return result
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors("Error searching for permissions with term '{search_term}'")
 async def search_permissions(
     search_term: str, ctx: Context, permission_type: str | None = None
@@ -591,7 +597,7 @@ async def search_permissions(
     return result
 
 
-@mcp.tool()
+@mcp.tool(annotations=_ADDS)
 @_reports_errors("Error creating group")
 async def create_group(ctx: Context, group_data: dict[str, Any]) -> dict[str, Any]:
     """Create a new group in Microsoft Graph.
@@ -657,7 +663,7 @@ async def create_group(ctx: Context, group_data: dict[str, Any]) -> dict[str, An
     return result
 
 
-@mcp.tool()
+@mcp.tool(annotations=_DESTRUCTIVE)
 @_reports_errors("Error updating group {group_id}")
 async def update_group(
     group_id: str, ctx: Context, group_data: dict[str, Any]
@@ -684,7 +690,7 @@ async def update_group(
     return result
 
 
-@mcp.tool()
+@mcp.tool(annotations=_DESTRUCTIVE)
 @_reports_errors("Error deleting group {group_id}")
 async def delete_group(group_id: str, ctx: Context) -> dict[str, Any]:
     """Delete a group from Microsoft Graph.
@@ -707,7 +713,7 @@ async def delete_group(group_id: str, ctx: Context) -> dict[str, Any]:
     }
 
 
-@mcp.tool()
+@mcp.tool(annotations=_ADDS)
 @_reports_errors(
     "Error adding member {member_id} to group {group_id}", value_errors_as_is=True
 )
@@ -755,7 +761,7 @@ async def add_group_member(
     }
 
 
-@mcp.tool()
+@mcp.tool(annotations=_DESTRUCTIVE)
 @_reports_errors(
     "Error removing member {member_id} from group {group_id}", value_errors_as_is=True
 )
@@ -803,7 +809,7 @@ async def remove_group_member(
     }
 
 
-@mcp.tool()
+@mcp.tool(annotations=_ADDS)
 @_reports_errors("Error adding owner {owner_id} to group {group_id}")
 async def add_group_owner(group_id: str, owner_id: str, ctx: Context) -> dict[str, Any]:
     """Add an owner to a group.
@@ -827,7 +833,7 @@ async def add_group_owner(group_id: str, owner_id: str, ctx: Context) -> dict[st
     }
 
 
-@mcp.tool()
+@mcp.tool(annotations=_DESTRUCTIVE)
 @_reports_errors("Error removing owner {owner_id} from group {group_id}")
 async def remove_group_owner(
     group_id: str, owner_id: str, ctx: Context
@@ -853,7 +859,7 @@ async def remove_group_owner(
     }
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors("Error listing applications")
 async def list_applications(ctx: Context, limit: int = 100) -> list[dict[str, Any]]:
     """List all applications (app registrations) in the tenant, with paging."""
@@ -863,7 +869,7 @@ async def list_applications(ctx: Context, limit: int = 100) -> list[dict[str, An
     return results
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors("Error fetching application {app_id}")
 async def get_application_by_id(app_id: str, ctx: Context) -> dict[str, Any] | None:
     """Get a specific application by its object ID."""
@@ -875,7 +881,7 @@ async def get_application_by_id(app_id: str, ctx: Context) -> dict[str, Any] | N
     return result
 
 
-@mcp.tool()
+@mcp.tool(annotations=_ADDS)
 @_reports_errors("Error creating application")
 async def create_application(ctx: Context, app_data: dict[str, Any]) -> dict[str, Any]:
     """Create a new application (app registration)."""
@@ -888,7 +894,7 @@ async def create_application(ctx: Context, app_data: dict[str, Any]) -> dict[str
     return result
 
 
-@mcp.tool()
+@mcp.tool(annotations=_DESTRUCTIVE)
 @_reports_errors("Error updating application {app_id}")
 async def update_application(
     app_id: str, ctx: Context, app_data: dict[str, Any]
@@ -901,7 +907,7 @@ async def update_application(
     return result
 
 
-@mcp.tool()
+@mcp.tool(annotations=_DESTRUCTIVE)
 @_reports_errors("Error deleting application {app_id}")
 async def delete_application(app_id: str, ctx: Context) -> dict[str, Any]:
     """Delete an application (app registration) by its object ID."""
@@ -915,7 +921,7 @@ async def delete_application(app_id: str, ctx: Context) -> dict[str, Any]:
     }
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors("Error listing service principals")
 async def list_service_principals(
     ctx: Context, limit: int = 100
@@ -927,7 +933,7 @@ async def list_service_principals(
     return results
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READ_ONLY)
 @_reports_errors("Error fetching service principal {sp_id}")
 async def get_service_principal_by_id(
     sp_id: str, ctx: Context
@@ -941,7 +947,7 @@ async def get_service_principal_by_id(
     return result
 
 
-@mcp.tool()
+@mcp.tool(annotations=_ADDS)
 @_reports_errors("Error creating service principal")
 async def create_service_principal(
     ctx: Context, sp_data: dict[str, Any]
@@ -958,7 +964,7 @@ async def create_service_principal(
     return result
 
 
-@mcp.tool()
+@mcp.tool(annotations=_DESTRUCTIVE)
 @_reports_errors("Error updating service principal {sp_id}")
 async def update_service_principal(
     sp_id: str, ctx: Context, sp_data: dict[str, Any]
@@ -973,7 +979,7 @@ async def update_service_principal(
     return result
 
 
-@mcp.tool()
+@mcp.tool(annotations=_DESTRUCTIVE)
 @_reports_errors("Error deleting service principal {sp_id}")
 async def delete_service_principal(sp_id: str, ctx: Context) -> dict[str, Any]:
     """Delete a service principal by its object ID."""
