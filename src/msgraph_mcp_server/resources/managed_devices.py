@@ -16,6 +16,7 @@ from msgraph_beta.generated.device_management.managed_devices.managed_devices_re
 )
 
 from ..utils.graph_client import GraphClient
+from ..utils.odata import odata_string_literal
 
 logger = logging.getLogger(__name__)
 
@@ -143,7 +144,7 @@ async def get_all_managed_devices(
         client = graph_client.get_beta_client()
         query_params = ManagedDevicesRequestBuilder.ManagedDevicesRequestBuilderGetQueryParameters()
         if filter_os:
-            query_params.filter = f"operatingSystem eq '{filter_os}'"
+            query_params.filter = f"operatingSystem eq {odata_string_literal(filter_os)}"
         request_configuration = RequestConfiguration(query_parameters=query_params)
         request_configuration.headers.add("ConsistencyLevel", "eventual")
 
@@ -168,7 +169,7 @@ async def get_managed_devices_by_user(
     try:
         client = graph_client.get_beta_client()
         query_params = ManagedDevicesRequestBuilder.ManagedDevicesRequestBuilderGetQueryParameters(
-            filter=f"userId eq '{user_id}'"
+            filter=f"userId eq {odata_string_literal(user_id)}"
         )
         request_configuration = RequestConfiguration(query_parameters=query_params)
         request_configuration.headers.add("ConsistencyLevel", "eventual")
