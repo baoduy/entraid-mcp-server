@@ -17,8 +17,6 @@ class GraphClient:
     This class is responsible for:
     1. Initializing and managing the Microsoft Graph client (v1.0)
     2. Initializing and managing the Microsoft Graph beta client (for Intune/beta features)
-    3. Providing core API functionality
-    4. Handling shared request configurations
     """
 
     def __init__(self, auth_manager: GraphAuthManager):

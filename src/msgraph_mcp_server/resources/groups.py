@@ -295,7 +295,9 @@ async def create_group(
 
     # Add members if provided and not dynamic membership
     if "members" in group_data and new_group and new_group.id and not is_dynamic:
-        for member_id in group_data["members"]:
+        # Each id once: the membership check reads Graph eventually, so a repeat right
+        # after its own add could be posted twice and refused.
+        for member_id in dict.fromkeys(group_data["members"]):
             await add_group_member(graph_client, new_group.id, member_id)
 
     # Return the created group

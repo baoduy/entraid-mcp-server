@@ -60,6 +60,10 @@ async def test_a_listed_member_already_in_the_new_group_does_not_fail_the_creati
     members = graph.groups.by_group_id("new-0001").members
     assert members.ids() == ["user-0001", AOIFE]
     assert len(graph.requests_to("groups/new-0001/members/$ref")) == 2
+    member_checks = [
+        r for r in graph.requests_to("groups/new-0001/members") if r.method == "get"
+    ]
+    assert len(member_checks) == 2
 
 
 # -- D4: the membership check -------------------------------------------------------------------
