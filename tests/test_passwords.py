@@ -21,10 +21,12 @@ async def reset(ctx, **kwargs):
     return await server.reset_user_password_direct(AOIFE, ctx, **kwargs)
 
 
-async def reset_expecting(graph_refuses, ctx, **kwargs):
+async def reset_expecting(graph_refuses, ctx, caplog, **kwargs):
     if graph_refuses:
         with pytest.raises(Exception, match="does not comply with the password policy"):
             await reset(ctx, **kwargs)
+        # The refusal is logged, so the absence check below reads a real error line.
+        assert [r for r in caplog.records if r.levelname == "ERROR" and AOIFE in r.getMessage()]
     else:
         await reset(ctx, **kwargs)
 
@@ -81,7 +83,7 @@ async def test_no_generated_password_reaches_the_server_log(graph, ctx, aoife, c
     caplog.set_level("DEBUG")
     aoife.refuse_patch = graph_refuses
 
-    await reset_expecting(graph_refuses, ctx, generate_password=True, password_length=16)
+    await reset_expecting(graph_refuses, ctx, caplog, generate_password=True, password_length=16)
 
     [password] = graph.password_changes(AOIFE)
     assert password not in caplog.text
@@ -93,7 +95,7 @@ async def test_no_supplied_password_reaches_the_server_log(graph, ctx, aoife, ca
     caplog.set_level("DEBUG")
     aoife.refuse_patch = graph_refuses
 
-    await reset_expecting(graph_refuses, ctx, password=SUPPLIED)
+    await reset_expecting(graph_refuses, ctx, caplog, password=SUPPLIED)
 
     assert graph.password_changes(AOIFE) == [SUPPLIED]
     assert SUPPLIED not in caplog.text
