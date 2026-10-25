@@ -18,7 +18,7 @@ An MCP server that lets an AI client such as Claude Desktop or Cursor read and m
 
 Every tool carries an MCP mark, so a client can let lookups run and ask before a change: 34 tools are read-only; 5 change the tenant without destroying anything (the 3 creates, add member, add owner); 9 are destructive (the 3 deletes, remove member, remove owner, the password reset and the 3 updates).
 
-The server is started and called by an AI client on behalf of an Entra ID admin. It runs on the admin's machine, talks to the client over standard input and output, and signs in to Microsoft Graph as the admin (or as an app you configure).
+The server publishes tools only — no MCP resources or prompts. It is started and called by an AI client on behalf of an Entra ID admin. It runs on the admin's machine, talks to the client over standard input and output, and signs in to Microsoft Graph as the admin (or as an app you configure).
 
 ## 🏗️ Runtime architecture
 
@@ -50,7 +50,7 @@ The identity the server signs in as needs Graph permissions for the tools you us
 
 ## 🚀 Quick Start
 
-You need [`uv`](https://docs.astral.sh/uv/) and Python 3.10 or later.
+You need [`uv`](https://docs.astral.sh/uv/) and Python 3.10 or later. The package pulls in fastmcp on its 4.x line (`fastmcp>=4.1.3,<5`), msgraph-sdk, msgraph-beta-sdk, msgraph-core, azure-identity, azure-core and python-dotenv, each pinned below its next major version in `pyproject.toml`.
 
 1. Sign in to Azure with an account that has the permissions above. The server uses this login by default:
 
@@ -94,6 +94,8 @@ uv sync
 uv run entraid-mcp-server          # or: uv run python -m msgraph_mcp_server
 ```
 
+With the package installed in an environment (`pip install entraid-mcp-server`), the `entraid-mcp-server` command starts the same server.
+
 ## ✅ Verify it works
 
 In your AI client, list the server's tools: you should see **48**. Then call `list_permission_categories_and_tasks` — it needs no Graph access, so it works before any permission is granted. The result starts:
@@ -103,6 +105,8 @@ In your AI client, list the server's tools: you should see **48**. Then call `li
 ```
 
 with the categories `users`, `groups`, `mail`, `calendar`, `files`, `devices`, `audit_logs` and `directory`. The server signs in only on the first tool that calls Microsoft Graph, so a sign-in problem shows up there, as the tool's error result.
+
+The client also sees the server's name, `EntraID MCP Server`, and its version: the installed release number (from a clone, the version in `pyproject.toml`).
 
 ## 🛠️ Common commands
 
