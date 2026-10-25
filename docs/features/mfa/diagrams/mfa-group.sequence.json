@@ -1,0 +1,166 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "MFA: get_group_mfa_status",
+    "output": "mfa-group.html",
+    "viewBox": [
+      1080,
+      612
+    ],
+    "column_fit": "spread",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/baoduy/entraid-mcp-server.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "090ba698766d32978c02ca904712f9517e3b53f8"
+    }
+  },
+  "participants": [
+    {
+      "id": "client",
+      "type": "external",
+      "label": "AI client",
+      "sublabel": "Claude, Cursor"
+    },
+    {
+      "id": "tool",
+      "type": "backend",
+      "label": "get_group_mfa_status",
+      "sublabel": "server.py tool",
+      "sources": [
+        {
+          "path": "src/msgraph_mcp_server/server.py",
+          "line": 186,
+          "end_line": 210,
+          "label": "get_group_mfa_status"
+        }
+      ]
+    },
+    {
+      "id": "mod",
+      "type": "backend",
+      "label": "mfa.get_group_mfa_status",
+      "sublabel": "resources/mfa.py",
+      "sources": [
+        {
+          "path": "src/msgraph_mcp_server/resources/mfa.py",
+          "line": 105,
+          "end_line": 149,
+          "label": "mfa.get_group_mfa_status"
+        }
+      ]
+    },
+    {
+      "id": "graph",
+      "type": "cloud",
+      "label": "Graph v1.0",
+      "sublabel": "/groups, /users"
+    }
+  ],
+  "segments": [
+    {
+      "from": 158,
+      "to": 272,
+      "label": "Members"
+    },
+    {
+      "from": 294,
+      "to": 468,
+      "label": "Per user"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m1",
+      "from": "client",
+      "to": "tool",
+      "y": 170,
+      "label": "tools/call get_group_mfa_status(group_id)",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m2",
+      "from": "tool",
+      "to": "mod",
+      "y": 200,
+      "label": "get_group_mfa_status(group_id)",
+      "variant": "default"
+    },
+    {
+      "id": "m3",
+      "from": "mod",
+      "to": "graph",
+      "y": 230,
+      "label": "GET /groups/{id}/members, every page",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m4",
+      "from": "graph",
+      "to": "mod",
+      "y": 260,
+      "label": "members; non-users skipped",
+      "variant": "return"
+    },
+    {
+      "id": "m5",
+      "from": "mod",
+      "to": "graph",
+      "y": 306,
+      "label": "GET /users/{id} $select=companyName",
+      "variant": "default"
+    },
+    {
+      "id": "m6",
+      "from": "mod",
+      "to": "graph",
+      "y": 336,
+      "label": "GET /users/{id}/authentication/methods",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m7",
+      "from": "graph",
+      "to": "mod",
+      "y": 366,
+      "label": "methods, or an error: counted unreadable",
+      "variant": "return"
+    },
+    {
+      "id": "m8",
+      "from": "mod",
+      "to": "tool",
+      "y": 396,
+      "label": "statuses, unreadable, user count",
+      "variant": "return"
+    },
+    {
+      "id": "m9",
+      "from": "tool",
+      "to": "client",
+      "y": 426,
+      "label": "warning: could not be read for N of M members",
+      "variant": "dashed"
+    },
+    {
+      "id": "m10",
+      "from": "tool",
+      "to": "client",
+      "y": 456,
+      "label": "list of MFA statuses",
+      "variant": "return"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Scope",
+      "items": [
+        "Direct members only; nested groups are not expanded",
+        "Any method other than password sets mfaStatus Enabled"
+      ]
+    }
+  ]
+}

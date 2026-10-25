@@ -1,0 +1,158 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "Permissions helper: search_permissions",
+    "output": "permissions-search.html",
+    "viewBox": [
+      1080,
+      582
+    ],
+    "column_fit": "spread",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/baoduy/entraid-mcp-server.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "090ba698766d32978c02ca904712f9517e3b53f8"
+    }
+  },
+  "participants": [
+    {
+      "id": "client",
+      "type": "external",
+      "label": "AI client",
+      "sublabel": "Claude, Cursor"
+    },
+    {
+      "id": "tool",
+      "type": "backend",
+      "label": "search_permissions",
+      "sublabel": "server.py tool",
+      "sources": [
+        {
+          "path": "src/msgraph_mcp_server/server.py",
+          "line": 585,
+          "end_line": 597,
+          "label": "search_permissions"
+        }
+      ]
+    },
+    {
+      "id": "mod",
+      "type": "backend",
+      "label": "permissions_helper",
+      "sublabel": "resources/permissions_helper.py",
+      "sources": [
+        {
+          "path": "src/msgraph_mcp_server/resources/permissions_helper.py",
+          "line": 194,
+          "end_line": 320,
+          "label": "permissions_helper"
+        }
+      ]
+    },
+    {
+      "id": "graph",
+      "type": "cloud",
+      "label": "Graph v1.0",
+      "sublabel": "/servicePrincipals"
+    }
+  ],
+  "segments": [
+    {
+      "from": 158,
+      "to": 332,
+      "label": "Read"
+    },
+    {
+      "from": 354,
+      "to": 438,
+      "label": "Graph refuses"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m1",
+      "from": "client",
+      "to": "tool",
+      "y": 170,
+      "label": "tools/call search_permissions(search_term, permission_type)",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m2",
+      "from": "tool",
+      "to": "mod",
+      "y": 200,
+      "label": "search_permissions(term, type)",
+      "variant": "default"
+    },
+    {
+      "id": "m3",
+      "from": "mod",
+      "to": "graph",
+      "y": 230,
+      "label": "GET /servicePrincipals/00000003-0000-0000-c000-000000000000",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m4",
+      "from": "graph",
+      "to": "mod",
+      "y": 260,
+      "label": "oauth2PermissionScopes, appRoles",
+      "variant": "return"
+    },
+    {
+      "id": "m5",
+      "from": "mod",
+      "to": "tool",
+      "y": 290,
+      "label": "case-insensitive matches + total_matches",
+      "variant": "return"
+    },
+    {
+      "id": "m6",
+      "from": "tool",
+      "to": "client",
+      "y": 320,
+      "label": "result",
+      "variant": "return"
+    },
+    {
+      "id": "m7",
+      "from": "graph",
+      "to": "mod",
+      "y": 366,
+      "label": "error response",
+      "variant": "return"
+    },
+    {
+      "id": "m8",
+      "from": "mod",
+      "to": "tool",
+      "y": 396,
+      "label": "exception",
+      "variant": "return"
+    },
+    {
+      "id": "m9",
+      "from": "tool",
+      "to": "client",
+      "y": 426,
+      "label": "Error searching for permissions with term '<term>': <reason>",
+      "variant": "return"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "No Graph call",
+      "items": [
+        "suggest_permissions_for_task and list_permission_categories_and_tasks",
+        "read the built-in COMMON_PERMISSION_MAPPINGS table"
+      ]
+    }
+  ]
+}

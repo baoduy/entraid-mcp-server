@@ -1,0 +1,175 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "Groups: add_group_member",
+    "output": "groups-add-member.html",
+    "viewBox": [
+      1080,
+      642
+    ],
+    "column_fit": "spread",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/baoduy/entraid-mcp-server.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "090ba698766d32978c02ca904712f9517e3b53f8"
+    }
+  },
+  "participants": [
+    {
+      "id": "client",
+      "type": "external",
+      "label": "AI client",
+      "sublabel": "Claude, Cursor"
+    },
+    {
+      "id": "tool",
+      "type": "backend",
+      "label": "add_group_member",
+      "sublabel": "server.py tool",
+      "sources": [
+        {
+          "path": "src/msgraph_mcp_server/server.py",
+          "line": 716,
+          "end_line": 761,
+          "label": "add_group_member"
+        }
+      ]
+    },
+    {
+      "id": "mod",
+      "type": "backend",
+      "label": "groups.add_group_member",
+      "sublabel": "resources/groups.py",
+      "sources": [
+        {
+          "path": "src/msgraph_mcp_server/resources/groups.py",
+          "line": 408,
+          "end_line": 438,
+          "label": "groups.add_group_member"
+        }
+      ]
+    },
+    {
+      "id": "graph",
+      "type": "cloud",
+      "label": "Graph v1.0",
+      "sublabel": "/groups/{id}"
+    }
+  ],
+  "segments": [
+    {
+      "from": 158,
+      "to": 272,
+      "label": "Check the group"
+    },
+    {
+      "from": 294,
+      "to": 498,
+      "label": "Add"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m1",
+      "from": "client",
+      "to": "tool",
+      "y": 170,
+      "label": "tools/call add_group_member(group_id, member_id)",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m2",
+      "from": "tool",
+      "to": "graph",
+      "y": 200,
+      "label": "GET /groups/{id} (get_group_by_id)",
+      "variant": "default"
+    },
+    {
+      "id": "m3",
+      "from": "graph",
+      "to": "tool",
+      "y": 230,
+      "label": "group, groupTypes",
+      "variant": "return"
+    },
+    {
+      "id": "m4",
+      "from": "tool",
+      "to": "client",
+      "y": 260,
+      "label": "dynamic group: status error, nothing written",
+      "variant": "return"
+    },
+    {
+      "id": "m5",
+      "from": "tool",
+      "to": "mod",
+      "y": 306,
+      "label": "add_group_member(group_id, member_id)",
+      "variant": "default"
+    },
+    {
+      "id": "m6",
+      "from": "mod",
+      "to": "graph",
+      "y": 336,
+      "label": "GET /groups/{id} again: DynamicMembership?",
+      "variant": "default"
+    },
+    {
+      "id": "m7",
+      "from": "mod",
+      "to": "graph",
+      "y": 366,
+      "label": "GET members $filter=id eq '<id>' $count, eventual",
+      "variant": "default"
+    },
+    {
+      "id": "m8",
+      "from": "graph",
+      "to": "mod",
+      "y": 396,
+      "label": "already a member: no write",
+      "variant": "return"
+    },
+    {
+      "id": "m9",
+      "from": "mod",
+      "to": "graph",
+      "y": 426,
+      "label": "POST /groups/{id}/members/$ref directoryObjects/{id}",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m10",
+      "from": "mod",
+      "to": "tool",
+      "y": 456,
+      "label": "True added / False already there",
+      "variant": "return"
+    },
+    {
+      "id": "m11",
+      "from": "tool",
+      "to": "client",
+      "y": 486,
+      "label": "success or already_exists",
+      "variant": "return"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Normal results",
+      "items": [
+        "status success: Member X was added to group Y",
+        "status already_exists: Member X is already in group Y",
+        "status error + isDynamicGroup for a dynamic group"
+      ]
+    }
+  ]
+}
