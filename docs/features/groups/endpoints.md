@@ -4,6 +4,8 @@ Part of [Groups](index.md).
 
 Each endpoint is an MCP tool. An AI client calls it with a JSON-RPC `tools/call` message over the server's standard input; the server answers on standard output.
 
+A tool that returns a list, or an object that can be `null`, sends it under `result` in `structuredContent` (`{"result": …}`), as its output schema declares; a tool that always returns an object sends that object itself. `content[0].text` carries the value itself, without the wrapper, as JSON text.
+
 ## 🔌 Endpoints
 
 | Tool | Mark | Purpose | Auth |
@@ -38,21 +40,23 @@ List groups, up to `limit`.
   Example `structuredContent`, captured from the test suite's in-memory Graph:
 
 ```json
-[
-  {
-    "id": "group-0000",
-    "displayName": "Group 0000",
-    "mail": "group0000@contoso.com",
-    "mailNickname": "group0000",
-    "description": "Group number 0",
-    "groupTypes": [
-      "Unified"
-    ],
-    "securityEnabled": false,
-    "mailEnabled": true,
-    "createdDateTime": "2026-01-15T09:30:00+00:00"
-  }
-]
+{
+  "result": [
+    {
+      "id": "group-0000",
+      "displayName": "Group 0000",
+      "mail": "group0000@contoso.com",
+      "mailNickname": "group0000",
+      "description": "Group number 0",
+      "groupTypes": [
+        "Unified"
+      ],
+      "securityEnabled": false,
+      "mailEnabled": true,
+      "createdDateTime": "2026-01-15T09:30:00+00:00"
+    }
+  ]
+}
 ```
 
 - **Errors:**
@@ -86,18 +90,20 @@ Get one group by id.
 
 ```json
 {
-  "id": "all-staff",
-  "displayName": "All Staff",
-  "mail": "allstaff@contoso.com",
-  "mailNickname": "allstaff",
-  "description": "Everyone at Contoso",
-  "groupTypes": [
-    "Unified"
-  ],
-  "securityEnabled": false,
-  "mailEnabled": true,
-  "visibility": "Private",
-  "createdDateTime": "2026-10-20T07:45:00+00:00"
+  "result": {
+    "id": "all-staff",
+    "displayName": "All Staff",
+    "mail": "allstaff@contoso.com",
+    "mailNickname": "allstaff",
+    "description": "Everyone at Contoso",
+    "groupTypes": [
+      "Unified"
+    ],
+    "securityEnabled": false,
+    "mailEnabled": true,
+    "visibility": "Private",
+    "createdDateTime": "2026-10-20T07:45:00+00:00"
+  }
 }
 ```
 
@@ -132,21 +138,23 @@ Find groups whose display name starts with the text given.
   Example `structuredContent`, captured from the test suite's in-memory Graph:
 
 ```json
-[
-  {
-    "id": "group-0000",
-    "displayName": "All 0000",
-    "mail": "group0000@contoso.com",
-    "mailNickname": "group0000",
-    "description": "All number 0",
-    "groupTypes": [
-      "Unified"
-    ],
-    "securityEnabled": false,
-    "mailEnabled": true,
-    "createdDateTime": "2026-01-15T09:30:00+00:00"
-  }
-]
+{
+  "result": [
+    {
+      "id": "group-0000",
+      "displayName": "All 0000",
+      "mail": "group0000@contoso.com",
+      "mailNickname": "group0000",
+      "description": "All number 0",
+      "groupTypes": [
+        "Unified"
+      ],
+      "securityEnabled": false,
+      "mailEnabled": true,
+      "createdDateTime": "2026-01-15T09:30:00+00:00"
+    }
+  ]
+}
 ```
 
 - **Errors:**
@@ -180,23 +188,25 @@ List a group's direct members, up to `limit`.
   Example `structuredContent`, captured from the test suite's in-memory Graph:
 
 ```json
-[
-  {
-    "id": "aoife@contoso.com",
-    "displayName": "Aoife Byrne",
-    "mail": "aoife@contoso.com",
-    "userPrincipalName": "aoife@contoso.com",
-    "givenName": "Aoife",
-    "surname": "Byrne",
-    "jobTitle": "Engineer",
-    "officeLocation": "Dublin",
-    "businessPhones": [
-      "+353 1 555 0100"
-    ],
-    "mobilePhone": "+353 87 555 0100",
-    "type": "#microsoft.graph.user"
-  }
-]
+{
+  "result": [
+    {
+      "id": "aoife@contoso.com",
+      "displayName": "Aoife Byrne",
+      "mail": "aoife@contoso.com",
+      "userPrincipalName": "aoife@contoso.com",
+      "givenName": "Aoife",
+      "surname": "Byrne",
+      "jobTitle": "Engineer",
+      "officeLocation": "Dublin",
+      "businessPhones": [
+        "+353 1 555 0100"
+      ],
+      "mobilePhone": "+353 87 555 0100",
+      "type": "#microsoft.graph.user"
+    }
+  ]
+}
 ```
 
 - **Errors:**
@@ -217,7 +227,7 @@ Create a group, then add the listed owners and members.
 
 - **Mark:** changes the tenant, not destructive
 - **Auth:** the identity the server signed in as ([configuration](../../configuration.md)); Microsoft Graph checks its permissions, the server checks none
-- **Idempotency:** By display name: when a group with the same `displayName` exists, that group is returned with `status: already_exists` and nothing is created — the listed owners and members are not added to it either.
+- **Idempotency:** By display name: when a group with the same `displayName` exists, that group is returned with `status: already_exists` and nothing is created — the listed owners and members are not added to it either. The check is a read just before the create, so two calls at the same moment can both create a group.
 - **Microsoft Graph:** `GET /groups?$filter=displayName eq '<displayName>'`; when no group matches, `POST /groups`, then `POST /groups/{id}/owners/$ref` per owner, then the `add_group_member` steps per distinct member (skipped for a dynamic group).
 - **Request:**
 
@@ -265,12 +275,12 @@ Create a group, then add the listed owners and members.
 
 | Result | Text | When |
 |---|---|---|
-| error result | `displayName is required for creating a group` | `displayName` missing. Before any Graph call |
-| error result | `mailNickname is required for creating a group` | `mailNickname` missing. Before any Graph call |
-| error result | `membershipRule is required for dynamic membership groups` | `groupTypes` holds `DynamicMembership` and `membershipRule` is missing. Before any Graph call |
-| error result | `owners must be a list of user IDs` | `owners` is not a list. After the duplicate-name check, before the group is created |
-| error result | `members must be a list of user IDs` | `members` is not a list (non-dynamic group). After the duplicate-name check, before the group is created |
-| error result | the Graph error | An owner or member add fails after the group was created. The group stays created with the owners and members added so far; nothing is rolled back |
+| error result | `Error calling tool 'create_group': displayName is required for creating a group`; notification `Error creating group: displayName is required for creating a group` | `displayName` missing. Before any Graph call |
+| error result | `Error calling tool 'create_group': mailNickname is required for creating a group`; notification `Error creating group: mailNickname is required for creating a group` | `mailNickname` missing. Before any Graph call |
+| error result | `Error calling tool 'create_group': membershipRule is required for dynamic membership groups`; notification `Error creating group: membershipRule is required for dynamic membership groups` | `groupTypes` holds `DynamicMembership` and `membershipRule` is missing. Before any Graph call |
+| error result | `Error calling tool 'create_group': owners must be a list of user IDs`; notification `Error creating group: owners must be a list of user IDs` | `owners` is not a list. After the duplicate-name check, before the group is created |
+| error result | `Error calling tool 'create_group': members must be a list of user IDs`; notification `Error creating group: members must be a list of user IDs` | `members` is not a list (non-dynamic group). After the duplicate-name check, before the group is created |
+| error result | `Error calling tool 'create_group': Error calling tool 'create_group': <reason>`; notification `Error creating group: <reason>`; notification `Error creating group: Error calling tool 'create_group': <reason>`; notification `Error creating group: <reason>` | An owner or member add fails after the group was created. The group stays created with the owners and members added so far; nothing is rolled back |
 | error result | `Error calling tool 'create_group': <reason>`; notification `Error creating group: <reason>` | Microsoft Graph or sign-in fails |
 
 - **Example:**
@@ -285,7 +295,7 @@ Change a group's display name, mail nickname, description or visibility.
 
 - **Mark:** destructive
 - **Auth:** the identity the server signed in as ([configuration](../../configuration.md)); Microsoft Graph checks its permissions, the server checks none
-- **Idempotency:** Not idempotent: each call is sent to Graph again.
+- **Idempotency:** Safe to retry: the same `PATCH` is sent again and leaves the same state; nothing new is created.
 - **Concurrency:** none: no ETag or version is sent, so the last write wins.
 - **Microsoft Graph:** `PATCH /groups/{group_id}` with the given keys, then `GET /groups/{group_id}`.
 - **Request:**
@@ -320,7 +330,7 @@ Change a group's display name, mail nickname, description or visibility.
 
 | Result | Text | When |
 |---|---|---|
-| error result | `Failed to retrieve updated group with ID <group_id>` | The group cannot be read back. After the PATCH succeeded |
+| error result | `Error calling tool 'update_group': Failed to retrieve updated group with ID <group_id>`; notification `Error updating group <group_id>: Failed to retrieve updated group with ID <group_id>` | The group cannot be read back. After the PATCH succeeded |
 | error result | `Error calling tool 'update_group': <reason>`; notification `Error updating group <group_id>: <reason>` | Microsoft Graph or sign-in fails |
 
 - **Example:**
@@ -336,6 +346,7 @@ Delete a group.
 - **Mark:** destructive
 - **Auth:** the identity the server signed in as ([configuration](../../configuration.md)); Microsoft Graph checks its permissions, the server checks none
 - **Idempotency:** Not idempotent: a second call reaches Graph again and fails with Graph's error once the group is gone.
+- **Concurrency:** none: no ETag or version is sent; the delete applies to the group as it is when Graph receives it.
 - **Microsoft Graph:** `DELETE /groups/{group_id}`.
 - **Request:**
 
@@ -373,13 +384,14 @@ Add a user, group, device or other directory object to a group.
 - **Mark:** changes the tenant, not destructive
 - **Auth:** the identity the server signed in as ([configuration](../../configuration.md)); Microsoft Graph checks its permissions, the server checks none
 - **Idempotency:** Yes: an existing direct member gets `{"status": "already_exists", "message": "Member <member_id> is already in group <group_id>"}` and nothing is posted. The check reads Graph with eventual consistency, so a member added moments earlier may not be seen yet.
+- **Concurrency:** none: the membership check and the `POST` are separate calls with no lock, so two calls at the same moment can both post and Graph refuses the second.
 - **Microsoft Graph:** `GET /groups/{group_id}` (twice: once in the tool, once in the resource), then `GET /groups/{group_id}/members?$filter=id eq '<member_id>'&$count=true` with `ConsistencyLevel: eventual`, then `POST /groups/{group_id}/members/$ref` with `@odata.id` = `https://graph.microsoft.com/v1.0/directoryObjects/<member_id>`.
 - **Request:**
 
 | Field | Type | Required | Default | Rules |
 |---|---|---|---|---|
 | `group_id` | string | yes | — | — |
-| `member_id` | string | yes | — | — |
+| `member_id` | string | yes | — | The member's object id: the membership check filters `id eq` and the reference is `directoryObjects/<member_id>` |
 
 - **Response:** `status` and `message` — see the normal results below.
 
@@ -404,8 +416,7 @@ Add a user, group, device or other directory object to a group.
 
 | Result | Text | When |
 |---|---|---|
-| error result | `Group with ID <group_id> not found` (notification is this text alone) | Graph returns no group. Before any write |
-| error result | notification is the error text alone | The server's own refusal (`ValueError`) |
+| error result | `Error calling tool 'add_group_member': Group with ID <group_id> not found`; notification `Group with ID <group_id> not found` alone | Graph returns no group. Before any write |
 | error result | `Error calling tool 'add_group_member': <reason>`; notification `Error adding member <member_id> to group <group_id>: <reason>` | Microsoft Graph or sign-in fails |
 
 - **Example:**
@@ -421,13 +432,14 @@ Remove a direct member from a group.
 - **Mark:** destructive
 - **Auth:** the identity the server signed in as ([configuration](../../configuration.md)); Microsoft Graph checks its permissions, the server checks none
 - **Idempotency:** Yes: someone who is not a direct member gets `{"status": "not_found", "message": "Member <member_id> is not in group <group_id>"}` and nothing is deleted.
+- **Concurrency:** none: the membership check and the `DELETE` are separate calls with no lock; Graph's answer decides a call that loses the race.
 - **Microsoft Graph:** `GET /groups/{group_id}` (twice), then the same membership check as `add_group_member`, then `DELETE /groups/{group_id}/members/{member_id}/$ref`.
 - **Request:**
 
 | Field | Type | Required | Default | Rules |
 |---|---|---|---|---|
 | `group_id` | string | yes | — | — |
-| `member_id` | string | yes | — | — |
+| `member_id` | string | yes | — | The member's object id: the membership check filters `id eq` |
 
 - **Response:** `status` and `message` — see the normal results below.
 
@@ -452,8 +464,7 @@ Remove a direct member from a group.
 
 | Result | Text | When |
 |---|---|---|
-| error result | `Group with ID <group_id> not found` (notification is this text alone) | Graph returns no group. Before any write |
-| error result | notification is the error text alone | The server's own refusal (`ValueError`) |
+| error result | `Error calling tool 'remove_group_member': Group with ID <group_id> not found`; notification `Group with ID <group_id> not found` alone | Graph returns no group. Before any write |
 | error result | `Error calling tool 'remove_group_member': <reason>`; notification `Error removing member <member_id> from group <group_id>: <reason>` | Microsoft Graph or sign-in fails |
 
 - **Example:**
@@ -469,13 +480,14 @@ Add an owner to a group.
 - **Mark:** changes the tenant, not destructive
 - **Auth:** the identity the server signed in as ([configuration](../../configuration.md)); Microsoft Graph checks its permissions, the server checks none
 - **Idempotency:** No check: adding an existing owner is posted again and Graph's answer decides the result.
+- **Concurrency:** none: no ETag or version is sent; Graph applies the reference as it arrives.
 - **Microsoft Graph:** `POST /groups/{group_id}/owners/$ref` with `@odata.id` = `https://graph.microsoft.com/v1.0/directoryObjects/<owner_id>`.
 - **Request:**
 
 | Field | Type | Required | Default | Rules |
 |---|---|---|---|---|
 | `group_id` | string | yes | — | — |
-| `owner_id` | string | yes | — | — |
+| `owner_id` | string | yes | — | The owner's object id: the reference is `directoryObjects/<owner_id>` |
 
 - **Response:** `{"status": "success", "message": "Owner <owner_id> was added to group <group_id>"}`.
 
@@ -507,13 +519,14 @@ Remove an owner from a group.
 - **Mark:** destructive
 - **Auth:** the identity the server signed in as ([configuration](../../configuration.md)); Microsoft Graph checks its permissions, the server checks none
 - **Idempotency:** No check: removing someone who is not an owner is sent to Graph and Graph's answer decides the result.
+- **Concurrency:** none: no ETag or version is sent; Graph removes the reference as it arrives.
 - **Microsoft Graph:** `DELETE /groups/{group_id}/owners/{owner_id}/$ref`.
 - **Request:**
 
 | Field | Type | Required | Default | Rules |
 |---|---|---|---|---|
 | `group_id` | string | yes | — | — |
-| `owner_id` | string | yes | — | — |
+| `owner_id` | string | yes | — | The owner's object id |
 
 - **Response:** `{"status": "success", "message": "Owner <owner_id> was removed from group <group_id>"}`.
 

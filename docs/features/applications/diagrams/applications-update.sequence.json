@@ -6,7 +6,7 @@
     "output": "applications-update.html",
     "viewBox": [
       1080,
-      612
+      658
     ],
     "column_fit": "spread",
     "quality_profile": "showcase",
@@ -67,8 +67,13 @@
     },
     {
       "from": 294,
-      "to": 468,
+      "to": 408,
       "label": "Re-read"
+    },
+    {
+      "from": 430,
+      "to": 514,
+      "label": "Graph refuses"
     }
   ],
   "messages": [
@@ -117,39 +122,47 @@
       "from": "mod",
       "to": "graph",
       "y": 336,
-      "label": "GET /servicePrincipals $filter appId eq '<appId>'",
+      "label": "GET /servicePrincipals $filter appId, then its grants (all pages)",
       "variant": "default"
     },
     {
       "id": "m7",
       "from": "mod",
-      "to": "graph",
-      "y": 366,
-      "label": "GET appRoleAssignments, oauth2PermissionGrants (all pages)",
-      "variant": "default"
-    },
-    {
-      "id": "m8",
-      "from": "graph",
-      "to": "mod",
-      "y": 396,
-      "label": "unreadable grants: empty list",
-      "variant": "return"
-    },
-    {
-      "id": "m9",
-      "from": "mod",
       "to": "tool",
-      "y": 426,
+      "y": 366,
       "label": "application + appRoleAssignments + oauth2PermissionGrants",
       "variant": "return"
     },
     {
-      "id": "m10",
+      "id": "m8",
       "from": "tool",
       "to": "client",
-      "y": 456,
+      "y": 396,
       "label": "updated application",
+      "variant": "return"
+    },
+    {
+      "id": "m9",
+      "from": "graph",
+      "to": "mod",
+      "y": 442,
+      "label": "error response",
+      "variant": "return"
+    },
+    {
+      "id": "m10",
+      "from": "mod",
+      "to": "tool",
+      "y": 472,
+      "label": "exception",
+      "variant": "return"
+    },
+    {
+      "id": "m11",
+      "from": "tool",
+      "to": "client",
+      "y": 502,
+      "label": "Error updating application <id>: <reason> + error result",
       "variant": "return"
     }
   ],

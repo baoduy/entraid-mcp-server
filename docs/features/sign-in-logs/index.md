@@ -33,55 +33,57 @@ No token on the call: the server signs in itself, as its [configuration](../../c
 {"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {"name": "get_user_sign_ins", "arguments": {"user_id": "7f3c9a", "days": 7}}}
 ```
 
-The result's `structuredContent`:
+The result's `structuredContent` — list and optional results arrive under `result`:
 
 ```json
-[
-  {
-    "id": "sign-in-1",
-    "createdDateTime": "2026-10-20T07:45:00+00:00",
-    "userId": "7f3c9a",
-    "userDisplayName": null,
-    "userPrincipalName": null,
-    "appDisplayName": null,
-    "appId": null,
-    "ipAddress": null,
-    "clientAppUsed": null,
-    "correlationId": null,
-    "isInteractive": null,
-    "resourceDisplayName": null,
-    "status": {
-      "errorCode": 0,
-      "failureReason": null,
-      "additionalDetails": null
-    },
-    "riskInformation": {
-      "riskDetail": null,
-      "riskLevelAggregated": null,
-      "riskLevelDuringSignIn": null,
-      "riskState": null,
-      "riskEventTypes": null
-    },
-    "deviceDetail": {
-      "deviceId": "device-1",
-      "displayName": "LAPTOP-0042",
-      "operatingSystem": null,
-      "browser": null,
-      "isCompliant": null,
-      "isManaged": null,
-      "trustType": null
-    },
-    "location": {
-      "city": "Dublin",
-      "state": null,
-      "countryOrRegion": "IE",
-      "coordinates": {
-        "latitude": 53.35,
-        "longitude": -6.26
+{
+  "result": [
+    {
+      "id": "sign-in-1",
+      "createdDateTime": "2026-10-20T07:45:00+00:00",
+      "userId": "7f3c9a",
+      "userDisplayName": null,
+      "userPrincipalName": null,
+      "appDisplayName": null,
+      "appId": null,
+      "ipAddress": null,
+      "clientAppUsed": null,
+      "correlationId": null,
+      "isInteractive": null,
+      "resourceDisplayName": null,
+      "status": {
+        "errorCode": 0,
+        "failureReason": null,
+        "additionalDetails": null
+      },
+      "riskInformation": {
+        "riskDetail": null,
+        "riskLevelAggregated": null,
+        "riskLevelDuringSignIn": null,
+        "riskState": null,
+        "riskEventTypes": null
+      },
+      "deviceDetail": {
+        "deviceId": "device-1",
+        "displayName": "LAPTOP-0042",
+        "operatingSystem": null,
+        "browser": null,
+        "isCompliant": null,
+        "isManaged": null,
+        "trustType": null
+      },
+      "location": {
+        "city": "Dublin",
+        "state": null,
+        "countryOrRegion": "IE",
+        "coordinates": {
+          "latitude": 53.35,
+          "longitude": -6.26
+        }
       }
     }
-  }
-]
+  ]
+}
 ```
 
 Captured by running the server's real MCP handler against the test suite's in-memory Microsoft Graph (`tests/conftest.py`), not a live tenant: the values are test data, the shape is the server's.

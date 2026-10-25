@@ -4,6 +4,8 @@ Part of [Conditional access](index.md).
 
 Each endpoint is an MCP tool. An AI client calls it with a JSON-RPC `tools/call` message over the server's standard input; the server answers on standard output.
 
+A tool that returns a list, or an object that can be `null`, sends it under `result` in `structuredContent` (`{"result": …}`), as its output schema declares; a tool that always returns an object sends that object itself. `content[0].text` carries the value itself, without the wrapper, as JSON text.
+
 ## 🔌 Endpoints
 
 | Tool | Mark | Purpose | Auth |
@@ -24,24 +26,26 @@ List the tenant's conditional access policies as flat rows.
 
 - **Response:** Each policy is one flat object: `id`, `displayName`, `state`, `createdDateTime`, `modifiedDateTime`, the condition columns (`Users_Include` … `Client_Applications`), the grant columns prefixed `Grant_`, and the session-control columns. List values are joined into one string with `; `.
 
-  Example `structuredContent`, captured from the test suite's in-memory Graph:
+  Example `structuredContent` (abridged: objects over 14 fields show their first 10), captured from the test suite's in-memory Graph:
 
 ```json
-[
-  {
-    "id": "policy-1",
-    "displayName": "Require MFA for All Staff",
-    "state": "enabled",
-    "createdDateTime": "2026-10-20T07:45:00+00:00",
-    "modifiedDateTime": "2026-10-20T07:45:00+00:00",
-    "Users_Include": "",
-    "Users_Exclude": "break-glass",
-    "Groups_Include": "all-staff",
-    "Groups_Include_Names": "All Staff (all-staff)",
-    "Groups_Exclude": "",
-    "…": "38 more fields"
-  }
-]
+{
+  "result": [
+    {
+      "id": "policy-1",
+      "displayName": "Require MFA for All Staff",
+      "state": "enabled",
+      "createdDateTime": "2026-10-20T07:45:00+00:00",
+      "modifiedDateTime": "2026-10-20T07:45:00+00:00",
+      "Users_Include": "",
+      "Users_Exclude": "break-glass",
+      "Groups_Include": "all-staff",
+      "Groups_Include_Names": "All Staff (all-staff)",
+      "Groups_Exclude": "",
+      "…": "38 more fields"
+    }
+  ]
+}
 ```
 
 - **Errors:**
@@ -71,7 +75,7 @@ Get one conditional access policy as a flat row.
 
 - **Response:** One flat policy object (same columns as `get_conditional_access_policies`), or `{}` with the warning `Policy with ID <policy_id> not found.` when Graph returns no object.
 
-  Example `structuredContent`, captured from the test suite's in-memory Graph:
+  Example `structuredContent` (abridged: objects over 14 fields show their first 10), captured from the test suite's in-memory Graph:
 
 ```json
 {

@@ -4,6 +4,8 @@ Part of [Audit logs](index.md).
 
 Each endpoint is an MCP tool. An AI client calls it with a JSON-RPC `tools/call` message over the server's standard input; the server answers on standard output.
 
+A tool that returns a list, or an object that can be `null`, sends it under `result` in `structuredContent` (`{"result": …}`), as its output schema declares; a tool that always returns an object sends that object itself. `content[0].text` carries the value itself, without the wrapper, as JSON text.
+
 ## 🔌 Endpoints
 
 | Tool | Mark | Purpose | Auth |
@@ -21,7 +23,7 @@ List the directory audit entries a user initiated over the last `days` days, new
 
 | Field | Type | Required | Default | Rules |
 |---|---|---|---|---|
-| `user_id` | string | yes | — | — |
+| `user_id` | string | yes | — | The user's object id: the filter matches `initiatedBy/user/id` |
 | `days` | integer | no | `30` | Window is now (UTC) minus `days` to now |
 
 - **Response:** Each entry has `id`, `activityDateTime`, `activityDisplayName`, `category`, `operationType`, `result`, `resultReason`, `initiatedBy` (user and app), `targetResources` (with `modifiedProperties`), `loggedByService`, `correlationId`, `additionalDetails`.
@@ -29,51 +31,53 @@ List the directory audit entries a user initiated over the last `days` days, new
   Example `structuredContent`, captured from the test suite's in-memory Graph:
 
 ```json
-[
-  {
-    "id": "audit-1",
-    "activityDateTime": "2026-10-20T07:45:00+00:00",
-    "activityDisplayName": "Update user",
-    "category": null,
-    "operationType": null,
-    "result": null,
-    "resultReason": null,
-    "initiatedBy": {
-      "user": {
-        "id": "7f3c9a",
-        "displayName": "Mai",
-        "userPrincipalName": "mai@contoso.com"
+{
+  "result": [
+    {
+      "id": "audit-1",
+      "activityDateTime": "2026-10-20T07:45:00+00:00",
+      "activityDisplayName": "Update user",
+      "category": null,
+      "operationType": null,
+      "result": null,
+      "resultReason": null,
+      "initiatedBy": {
+        "user": {
+          "id": "7f3c9a",
+          "displayName": "Mai",
+          "userPrincipalName": "mai@contoso.com"
+        },
+        "app": {
+          "appId": "app-1",
+          "displayName": "Portal"
+        }
       },
-      "app": {
-        "appId": "app-1",
-        "displayName": "Portal"
-      }
-    },
-    "targetResources": [
-      {
-        "id": "aoife",
-        "displayName": "Aoife",
-        "type": null,
-        "userPrincipalName": null,
-        "modifiedProperties": [
-          {
-            "displayName": "JobTitle",
-            "oldValue": "a",
-            "newValue": "b"
-          }
-        ]
-      }
-    ],
-    "loggedByService": null,
-    "correlationId": null,
-    "additionalDetails": [
-      {
-        "key": "UserType",
-        "value": "Member"
-      }
-    ]
-  }
-]
+      "targetResources": [
+        {
+          "id": "aoife",
+          "displayName": "Aoife",
+          "type": null,
+          "userPrincipalName": null,
+          "modifiedProperties": [
+            {
+              "displayName": "JobTitle",
+              "oldValue": "a",
+              "newValue": "b"
+            }
+          ]
+        }
+      ],
+      "loggedByService": null,
+      "correlationId": null,
+      "additionalDetails": [
+        {
+          "key": "UserType",
+          "value": "Member"
+        }
+      ]
+    }
+  ]
+}
 ```
 
 - **Errors:**

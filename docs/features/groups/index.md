@@ -5,7 +5,7 @@ Manage groups: find and read them, create and change them, and control who is a 
 ## 📖 Overview
 
 - Find groups by the start of their display name, list them all, or read one, with paging up to the limit you ask for.
-- Create a group with its owners and members in one call. A group whose display name already exists is returned as it is, never created twice.
+- Create a group with its owners and members in one call. A group whose display name already exists is returned as it is instead of a second one being created; the check is a read just before the create, so two calls at the same moment can still both create one.
 - Add or remove a member: someone already in the group is reported as already there, someone not in it as not there — neither is an error.
 - Members of a dynamic group follow its membership rule, so the server refuses to add or remove them by hand.
 - Add or remove owners, change a group's name, nickname, description or visibility, and delete a group.
@@ -29,7 +29,7 @@ Group lifecycle and membership in the directory. Reading a user's own membership
 |---|---|---|
 | A group needs `displayName` and `mailNickname` | the checks in the `create_group` tool and `groups.create_group` | Error result `displayName is required for creating a group` (or `mailNickname …`) |
 | A dynamic group needs a membership rule | the `DynamicMembership` check in `create_group` | Error result `membershipRule is required for dynamic membership groups` |
-| No second group with the same display name | the `displayName eq` lookup in `groups.create_group` | The existing group, `status: already_exists` |
+| A create with an existing display name returns that group (a check, not a lock: simultaneous creates can still both succeed) | the `displayName eq` lookup in `groups.create_group` | The existing group, `status: already_exists` |
 | Dynamic group members are not edited by hand | the `groupTypes` checks in `add_group_member` and `remove_group_member` | `status: error`, `isDynamicGroup: true`; nothing written |
 | A member is added once and removed only when present | `_is_member` in `groups` | `status: already_exists` or `status: not_found` |
 | Each listed member is added once at creation | `dict.fromkeys` in `groups.create_group` | — |

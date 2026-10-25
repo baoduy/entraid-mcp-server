@@ -32,54 +32,56 @@ No token on the call: the server signs in itself, as its [configuration](../../c
 {"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {"name": "get_user_audit_logs", "arguments": {"user_id": "7f3c9a", "days": 30}}}
 ```
 
-The result's `structuredContent`:
+The result's `structuredContent` — list and optional results arrive under `result`:
 
 ```json
-[
-  {
-    "id": "audit-1",
-    "activityDateTime": "2026-10-20T07:45:00+00:00",
-    "activityDisplayName": "Update user",
-    "category": null,
-    "operationType": null,
-    "result": null,
-    "resultReason": null,
-    "initiatedBy": {
-      "user": {
-        "id": "7f3c9a",
-        "displayName": "Mai",
-        "userPrincipalName": "mai@contoso.com"
+{
+  "result": [
+    {
+      "id": "audit-1",
+      "activityDateTime": "2026-10-20T07:45:00+00:00",
+      "activityDisplayName": "Update user",
+      "category": null,
+      "operationType": null,
+      "result": null,
+      "resultReason": null,
+      "initiatedBy": {
+        "user": {
+          "id": "7f3c9a",
+          "displayName": "Mai",
+          "userPrincipalName": "mai@contoso.com"
+        },
+        "app": {
+          "appId": "app-1",
+          "displayName": "Portal"
+        }
       },
-      "app": {
-        "appId": "app-1",
-        "displayName": "Portal"
-      }
-    },
-    "targetResources": [
-      {
-        "id": "aoife",
-        "displayName": "Aoife",
-        "type": null,
-        "userPrincipalName": null,
-        "modifiedProperties": [
-          {
-            "displayName": "JobTitle",
-            "oldValue": "a",
-            "newValue": "b"
-          }
-        ]
-      }
-    ],
-    "loggedByService": null,
-    "correlationId": null,
-    "additionalDetails": [
-      {
-        "key": "UserType",
-        "value": "Member"
-      }
-    ]
-  }
-]
+      "targetResources": [
+        {
+          "id": "aoife",
+          "displayName": "Aoife",
+          "type": null,
+          "userPrincipalName": null,
+          "modifiedProperties": [
+            {
+              "displayName": "JobTitle",
+              "oldValue": "a",
+              "newValue": "b"
+            }
+          ]
+        }
+      ],
+      "loggedByService": null,
+      "correlationId": null,
+      "additionalDetails": [
+        {
+          "key": "UserType",
+          "value": "Member"
+        }
+      ]
+    }
+  ]
+}
 ```
 
 Captured by running the server's real MCP handler against the test suite's in-memory Microsoft Graph (`tests/conftest.py`), not a live tenant: the values are test data, the shape is the server's.

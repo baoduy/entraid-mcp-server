@@ -4,6 +4,8 @@ Part of [Users](index.md).
 
 Each endpoint is an MCP tool. An AI client calls it with a JSON-RPC `tools/call` message over the server's standard input; the server answers on standard output.
 
+A tool that returns a list, or an object that can be `null`, sends it under `result` in `structuredContent` (`{"result": …}`), as its output schema declares; a tool that always returns an object sends that object itself. `content[0].text` carries the value itself, without the wrapper, as JSON text.
+
 ## 🔌 Endpoints
 
 | Tool | Mark | Purpose | Auth |
@@ -33,22 +35,24 @@ Search users by name or email.
   Example `structuredContent` (taken from the tool function: a validating MCP client rejects it, see Errors), captured from the test suite's in-memory Graph:
 
 ```json
-[
-  {
-    "id": "aoife@contoso.com",
-    "displayName": "Aoife Byrne",
-    "mail": "aoife@contoso.com",
-    "userPrincipalName": "aoife@contoso.com",
-    "givenName": "Aoife",
-    "surname": "Byrne",
-    "jobTitle": "Engineer",
-    "officeLocation": "Dublin",
-    "businessPhones": [
-      "+353 1 555 0100"
-    ],
-    "mobilePhone": "+353 87 555 0100"
-  }
-]
+{
+  "result": [
+    {
+      "id": "aoife@contoso.com",
+      "displayName": "Aoife Byrne",
+      "mail": "aoife@contoso.com",
+      "userPrincipalName": "aoife@contoso.com",
+      "givenName": "Aoife",
+      "surname": "Byrne",
+      "jobTitle": "Engineer",
+      "officeLocation": "Dublin",
+      "businessPhones": [
+        "+353 1 555 0100"
+      ],
+      "mobilePhone": "+353 87 555 0100"
+    }
+  ]
+}
 ```
 
 - **Errors:**
@@ -56,7 +60,7 @@ Search users by name or email.
 | Result | Text | When |
 |---|---|---|
 | A client that validates structured output | client-side: `Invalid structured content returned by tool search_users: ... is not of type 'string'` | The tool declares every user field a string, but `businessPhones` is a list and empty fields are `null`. Any result with a user fails this check; an empty result passes. |
-| error result | notification `Authentication error: <reason>` | Sign-in cannot be set up (`AuthenticationError`) |
+| error result | `Error calling tool 'search_users': <reason>`; notification `Authentication error: <reason>` | Sign-in cannot be set up (`AuthenticationError`) |
 | error result | `Error calling tool 'search_users': <reason>`; notification `Error searching users: <reason>` | Microsoft Graph or sign-in fails |
 
 - **Example:**
@@ -84,18 +88,20 @@ Get one user's profile by object id or user principal name.
 
 ```json
 {
-  "id": "aoife@contoso.com",
-  "displayName": "Aoife Byrne",
-  "mail": "aoife@contoso.com",
-  "userPrincipalName": "aoife@contoso.com",
-  "givenName": "Aoife",
-  "surname": "Byrne",
-  "jobTitle": "Engineer",
-  "officeLocation": "Dublin",
-  "businessPhones": [
-    "+353 1 555 0100"
-  ],
-  "mobilePhone": "+353 87 555 0100"
+  "result": {
+    "id": "aoife@contoso.com",
+    "displayName": "Aoife Byrne",
+    "mail": "aoife@contoso.com",
+    "userPrincipalName": "aoife@contoso.com",
+    "givenName": "Aoife",
+    "surname": "Byrne",
+    "jobTitle": "Engineer",
+    "officeLocation": "Dublin",
+    "businessPhones": [
+      "+353 1 555 0100"
+    ],
+    "mobilePhone": "+353 87 555 0100"
+  }
 }
 ```
 
@@ -103,7 +109,7 @@ Get one user's profile by object id or user principal name.
 
 | Result | Text | When |
 |---|---|---|
-| error result | notification `Authentication error: <reason>` | Sign-in cannot be set up (`AuthenticationError`) |
+| error result | `Error calling tool 'get_user_by_id': <reason>`; notification `Authentication error: <reason>` | Sign-in cannot be set up (`AuthenticationError`) |
 | error result | `Error calling tool 'get_user_by_id': <reason>`; notification `Error fetching user <user_id>: <reason>` | Microsoft Graph or sign-in fails |
 
 - **Example:**
@@ -128,25 +134,27 @@ List every user who holds an activated directory role, with the role names.
   Example `structuredContent`, captured from the test suite's in-memory Graph:
 
 ```json
-[
-  {
-    "id": "aoife@contoso.com",
-    "displayName": "Aoife Byrne",
-    "mail": "aoife@contoso.com",
-    "userPrincipalName": "aoife@contoso.com",
-    "givenName": "Aoife",
-    "surname": "Byrne",
-    "jobTitle": "Engineer",
-    "officeLocation": "Dublin",
-    "businessPhones": [
-      "+353 1 555 0100"
-    ],
-    "mobilePhone": "+353 87 555 0100",
-    "roles": [
-      "Global Administrator"
-    ]
-  }
-]
+{
+  "result": [
+    {
+      "id": "aoife@contoso.com",
+      "displayName": "Aoife Byrne",
+      "mail": "aoife@contoso.com",
+      "userPrincipalName": "aoife@contoso.com",
+      "givenName": "Aoife",
+      "surname": "Byrne",
+      "jobTitle": "Engineer",
+      "officeLocation": "Dublin",
+      "businessPhones": [
+        "+353 1 555 0100"
+      ],
+      "mobilePhone": "+353 87 555 0100",
+      "roles": [
+        "Global Administrator"
+      ]
+    }
+  ]
+}
 ```
 
 - **Errors:**
@@ -179,17 +187,19 @@ List every group a user belongs to, directly or through nested groups.
   Example `structuredContent`, captured from the test suite's in-memory Graph:
 
 ```json
-[
-  {
-    "id": "all-staff",
-    "displayName": "All Staff",
-    "mail": "allstaff@contoso.com",
-    "groupTypes": [
-      "Unified"
-    ],
-    "description": "Everyone at Contoso"
-  }
-]
+{
+  "result": [
+    {
+      "id": "all-staff",
+      "displayName": "All Staff",
+      "mail": "allstaff@contoso.com",
+      "groupTypes": [
+        "Unified"
+      ],
+      "description": "Everyone at Contoso"
+    }
+  ]
+}
 ```
 
 - **Errors:**
@@ -222,14 +232,16 @@ List the directory roles a user holds directly.
   Example `structuredContent`, captured from the test suite's in-memory Graph:
 
 ```json
-[
-  {
-    "id": "role-1",
-    "displayName": "Global Administrator",
-    "description": "Can manage all aspects of Entra ID",
-    "roleTemplateId": "62e90394-69f5-4237-9190-012177145e10"
-  }
-]
+{
+  "result": [
+    {
+      "id": "role-1",
+      "displayName": "Global Administrator",
+      "description": "Can manage all aspects of Entra ID",
+      "roleTemplateId": "62e90394-69f5-4237-9190-012177145e10"
+    }
+  ]
+}
 ```
 
 - **Errors:**

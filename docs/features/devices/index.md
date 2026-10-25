@@ -38,21 +38,23 @@ No token on the call: the server signs in itself, as its [configuration](../../c
 {"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {"name": "get_managed_device_by_id", "arguments": {"device_id": "device-1"}}}
 ```
 
-The result's `structuredContent` (abridged: the first 10 of 50 fields):
+The result's `structuredContent` (abridged: the first 10 of 50 fields) — list and optional results arrive under `result`:
 
 ```json
 {
-  "id": "device-1",
-  "deviceName": "LAPTOP-0042",
-  "managedDeviceName": null,
-  "userId": "7f3c9a",
-  "userPrincipalName": null,
-  "userDisplayName": null,
-  "emailAddress": null,
-  "operatingSystem": "Windows",
-  "osVersion": null,
-  "manufacturer": null,
-  "…": "40 more fields"
+  "result": {
+    "id": "device-1",
+    "deviceName": "LAPTOP-0042",
+    "managedDeviceName": null,
+    "userId": "7f3c9a",
+    "userPrincipalName": null,
+    "userDisplayName": null,
+    "emailAddress": null,
+    "operatingSystem": "Windows",
+    "osVersion": null,
+    "manufacturer": null,
+    "…": "40 more fields"
+  }
 }
 ```
 

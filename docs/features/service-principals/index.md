@@ -35,41 +35,43 @@ No token on the call: the server signs in itself, as its [configuration](../../c
 {"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {"name": "get_service_principal_by_id", "arguments": {"sp_id": "payroll-sync-sp"}}}
 ```
 
-The result's `structuredContent`:
+The result's `structuredContent` — list and optional results arrive under `result`:
 
 ```json
 {
-  "id": "payroll-sync-sp",
-  "appId": "payroll-sync-app",
-  "displayName": "Payroll Sync",
-  "createdDateTime": null,
-  "accountEnabled": true,
-  "appOwnerOrganizationId": "contoso-tenant",
-  "tags": [
-    "payroll"
-  ],
-  "appRoleAssignments": [
-    {
-      "id": "assignment-1",
-      "createdDateTime": "2026-10-20T07:45:00Z",
-      "appRoleId": null,
-      "principalDisplayName": null,
-      "principalId": null,
-      "principalType": null,
-      "resourceDisplayName": null,
-      "resourceId": null
-    }
-  ],
-  "oauth2PermissionGrants": [
-    {
-      "id": "grant-1",
-      "clientId": null,
-      "consentType": null,
-      "principalId": null,
-      "resourceId": null,
-      "scope": "User.Read"
-    }
-  ]
+  "result": {
+    "id": "payroll-sync-sp",
+    "appId": "payroll-sync-app",
+    "displayName": "Payroll Sync",
+    "createdDateTime": null,
+    "accountEnabled": true,
+    "appOwnerOrganizationId": "contoso-tenant",
+    "tags": [
+      "payroll"
+    ],
+    "appRoleAssignments": [
+      {
+        "id": "assignment-1",
+        "createdDateTime": "2026-10-20T07:45:00Z",
+        "appRoleId": null,
+        "principalDisplayName": null,
+        "principalId": null,
+        "principalType": null,
+        "resourceDisplayName": null,
+        "resourceId": null
+      }
+    ],
+    "oauth2PermissionGrants": [
+      {
+        "id": "grant-1",
+        "clientId": null,
+        "consentType": null,
+        "principalId": null,
+        "resourceId": null,
+        "scope": "User.Read"
+      }
+    ]
+  }
 }
 ```
 
@@ -77,7 +79,7 @@ Captured by running the server's real MCP handler against the test suite's in-me
 
 ## 🔄 End-to-end flow
 
-![An AI client calls update_service_principal; the module PATCHes the service principal in Graph, then re-reads it with its app role assignments and delegated grants, and returns the updated service principal.](diagrams/service-principals-update.svg)
+![An AI client calls update_service_principal; the module PATCHes the service principal in Graph, then re-reads it with its app role assignments and delegated grants, and returns the updated service principal; when Graph refuses, the client gets an error notification and the error result.](diagrams/service-principals-update.svg)
 
 `update_service_principal` stands for the feature's writes: one `PATCH`, then the full read of `get_service_principal_by_id`. Nothing is stored and no ETag is sent, so the last write wins.
 

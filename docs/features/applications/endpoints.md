@@ -4,6 +4,8 @@ Part of [Applications](index.md).
 
 Each endpoint is an MCP tool. An AI client calls it with a JSON-RPC `tools/call` message over the server's standard input; the server answers on standard output.
 
+A tool that returns a list, or an object that can be `null`, sends it under `result` in `structuredContent` (`{"result": …}`), as its output schema declares; a tool that always returns an object sends that object itself. `content[0].text` carries the value itself, without the wrapper, as JSON text.
+
 ## 🔌 Endpoints
 
 | Tool | Mark | Purpose | Auth |
@@ -32,19 +34,21 @@ List app registrations, up to `limit`.
   Example `structuredContent`, captured from the test suite's in-memory Graph:
 
 ```json
-[
-  {
-    "id": "payroll-sync-object",
-    "appId": "payroll-sync-app",
-    "displayName": "Payroll Sync",
-    "createdDateTime": "2026-10-20T07:45:00+00:00",
-    "signInAudience": "AzureADMyOrg",
-    "publisherDomain": "contoso.com",
-    "tags": [
-      "payroll"
-    ]
-  }
-]
+{
+  "result": [
+    {
+      "id": "payroll-sync-object",
+      "appId": "payroll-sync-app",
+      "displayName": "Payroll Sync",
+      "createdDateTime": "2026-10-20T07:45:00+00:00",
+      "signInAudience": "AzureADMyOrg",
+      "publisherDomain": "contoso.com",
+      "tags": [
+        "payroll"
+      ]
+    }
+  ]
+}
 ```
 
 - **Errors:**
@@ -78,37 +82,39 @@ Get an app registration with the permissions its service principal holds.
 
 ```json
 {
-  "id": "payroll-sync-object",
-  "appId": "payroll-sync-app",
-  "displayName": "Payroll Sync",
-  "createdDateTime": "2026-10-20T07:45:00+00:00",
-  "signInAudience": "AzureADMyOrg",
-  "publisherDomain": "contoso.com",
-  "tags": [
-    "payroll"
-  ],
-  "appRoleAssignments": [
-    {
-      "id": "assignment-1",
-      "createdDateTime": "2026-10-20T07:45:00Z",
-      "appRoleId": null,
-      "principalDisplayName": null,
-      "principalId": null,
-      "principalType": null,
-      "resourceDisplayName": null,
-      "resourceId": null
-    }
-  ],
-  "oauth2PermissionGrants": [
-    {
-      "id": "grant-1",
-      "clientId": null,
-      "consentType": null,
-      "principalId": null,
-      "resourceId": null,
-      "scope": "User.Read"
-    }
-  ]
+  "result": {
+    "id": "payroll-sync-object",
+    "appId": "payroll-sync-app",
+    "displayName": "Payroll Sync",
+    "createdDateTime": "2026-10-20T07:45:00+00:00",
+    "signInAudience": "AzureADMyOrg",
+    "publisherDomain": "contoso.com",
+    "tags": [
+      "payroll"
+    ],
+    "appRoleAssignments": [
+      {
+        "id": "assignment-1",
+        "createdDateTime": "2026-10-20T07:45:00Z",
+        "appRoleId": null,
+        "principalDisplayName": null,
+        "principalId": null,
+        "principalType": null,
+        "resourceDisplayName": null,
+        "resourceId": null
+      }
+    ],
+    "oauth2PermissionGrants": [
+      {
+        "id": "grant-1",
+        "clientId": null,
+        "consentType": null,
+        "principalId": null,
+        "resourceId": null,
+        "scope": "User.Read"
+      }
+    ]
+  }
 }
 ```
 
@@ -158,7 +164,7 @@ Create an app registration.
 
 | Result | Text | When |
 |---|---|---|
-| error result | `Failed to create application` | Graph returns no object. After the POST |
+| error result | `Error calling tool 'create_application': Failed to create application`; notification `Error creating application: Failed to create application` | Graph returns no object. After the POST |
 | error result | `Error calling tool 'create_application': <reason>`; notification `Error creating application: <reason>` | Microsoft Graph or sign-in fails |
 
 - **Example:**
@@ -173,7 +179,7 @@ Change an app registration.
 
 - **Mark:** destructive
 - **Auth:** the identity the server signed in as ([configuration](../../configuration.md)); Microsoft Graph checks its permissions, the server checks none
-- **Idempotency:** Not idempotent: each call is sent to Graph again.
+- **Idempotency:** Safe to retry: the same `PATCH` is sent again and leaves the same state; nothing new is created.
 - **Concurrency:** none: no ETag or version is sent, so the last write wins.
 - **Microsoft Graph:** `PATCH /applications/{app_id}` with the supported `app_data` keys, then the `get_application_by_id` reads.
 - **Request:**
@@ -242,6 +248,7 @@ Delete an app registration.
 - **Mark:** destructive
 - **Auth:** the identity the server signed in as ([configuration](../../configuration.md)); Microsoft Graph checks its permissions, the server checks none
 - **Idempotency:** Not idempotent: a second call reaches Graph again and fails with Graph's error once the application is gone.
+- **Concurrency:** none: no ETag or version is sent; the delete applies to the application as it is when Graph receives it.
 - **Microsoft Graph:** `DELETE /applications/{app_id}`.
 - **Request:**
 

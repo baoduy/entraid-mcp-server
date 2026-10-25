@@ -4,6 +4,8 @@ Part of [Service principals](index.md).
 
 Each endpoint is an MCP tool. An AI client calls it with a JSON-RPC `tools/call` message over the server's standard input; the server answers on standard output.
 
+A tool that returns a list, or an object that can be `null`, sends it under `result` in `structuredContent` (`{"result": …}`), as its output schema declares; a tool that always returns an object sends that object itself. `content[0].text` carries the value itself, without the wrapper, as JSON text.
+
 ## 🔌 Endpoints
 
 | Tool | Mark | Purpose | Auth |
@@ -32,19 +34,21 @@ List service principals, up to `limit`.
   Example `structuredContent`, captured from the test suite's in-memory Graph:
 
 ```json
-[
-  {
-    "id": "payroll-sync-sp",
-    "appId": "payroll-sync-app",
-    "displayName": "Payroll Sync",
-    "createdDateTime": null,
-    "accountEnabled": true,
-    "appOwnerOrganizationId": "contoso-tenant",
-    "tags": [
-      "payroll"
-    ]
-  }
-]
+{
+  "result": [
+    {
+      "id": "payroll-sync-sp",
+      "appId": "payroll-sync-app",
+      "displayName": "Payroll Sync",
+      "createdDateTime": null,
+      "accountEnabled": true,
+      "appOwnerOrganizationId": "contoso-tenant",
+      "tags": [
+        "payroll"
+      ]
+    }
+  ]
+}
 ```
 
 - **Errors:**
@@ -78,37 +82,39 @@ Get a service principal with its app role assignments and delegated grants.
 
 ```json
 {
-  "id": "payroll-sync-sp",
-  "appId": "payroll-sync-app",
-  "displayName": "Payroll Sync",
-  "createdDateTime": null,
-  "accountEnabled": true,
-  "appOwnerOrganizationId": "contoso-tenant",
-  "tags": [
-    "payroll"
-  ],
-  "appRoleAssignments": [
-    {
-      "id": "assignment-1",
-      "createdDateTime": "2026-10-20T07:45:00Z",
-      "appRoleId": null,
-      "principalDisplayName": null,
-      "principalId": null,
-      "principalType": null,
-      "resourceDisplayName": null,
-      "resourceId": null
-    }
-  ],
-  "oauth2PermissionGrants": [
-    {
-      "id": "grant-1",
-      "clientId": null,
-      "consentType": null,
-      "principalId": null,
-      "resourceId": null,
-      "scope": "User.Read"
-    }
-  ]
+  "result": {
+    "id": "payroll-sync-sp",
+    "appId": "payroll-sync-app",
+    "displayName": "Payroll Sync",
+    "createdDateTime": null,
+    "accountEnabled": true,
+    "appOwnerOrganizationId": "contoso-tenant",
+    "tags": [
+      "payroll"
+    ],
+    "appRoleAssignments": [
+      {
+        "id": "assignment-1",
+        "createdDateTime": "2026-10-20T07:45:00Z",
+        "appRoleId": null,
+        "principalDisplayName": null,
+        "principalId": null,
+        "principalType": null,
+        "resourceDisplayName": null,
+        "resourceId": null
+      }
+    ],
+    "oauth2PermissionGrants": [
+      {
+        "id": "grant-1",
+        "clientId": null,
+        "consentType": null,
+        "principalId": null,
+        "resourceId": null,
+        "scope": "User.Read"
+      }
+    ]
+  }
 }
 ```
 
@@ -158,7 +164,7 @@ Create a service principal for an application id.
 
 | Result | Text | When |
 |---|---|---|
-| error result | `Failed to create service principal` | Graph returns no object. After the POST |
+| error result | `Error calling tool 'create_service_principal': Failed to create service principal`; notification `Error creating service principal: Failed to create service principal` | Graph returns no object. After the POST |
 | error result | `Error calling tool 'create_service_principal': <reason>`; notification `Error creating service principal: <reason>` | Microsoft Graph or sign-in fails |
 
 - **Example:**
@@ -173,7 +179,7 @@ Change a service principal.
 
 - **Mark:** destructive
 - **Auth:** the identity the server signed in as ([configuration](../../configuration.md)); Microsoft Graph checks its permissions, the server checks none
-- **Idempotency:** Not idempotent: each call is sent to Graph again.
+- **Idempotency:** Safe to retry: the same `PATCH` is sent again and leaves the same state; nothing new is created.
 - **Concurrency:** none: no ETag or version is sent, so the last write wins.
 - **Microsoft Graph:** `PATCH /servicePrincipals/{sp_id}` with the supported `sp_data` keys, then the `get_service_principal_by_id` reads.
 - **Request:**
@@ -242,6 +248,7 @@ Delete a service principal.
 - **Mark:** destructive
 - **Auth:** the identity the server signed in as ([configuration](../../configuration.md)); Microsoft Graph checks its permissions, the server checks none
 - **Idempotency:** Not idempotent: a second call reaches Graph again and fails with Graph's error once the service principal is gone.
+- **Concurrency:** none: no ETag or version is sent; the delete applies to the service principal as it is when Graph receives it.
 - **Microsoft Graph:** `DELETE /servicePrincipals/{sp_id}`.
 - **Request:**
 

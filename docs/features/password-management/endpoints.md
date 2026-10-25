@@ -4,6 +4,8 @@ Part of [Password management](index.md).
 
 Each endpoint is an MCP tool. An AI client calls it with a JSON-RPC `tools/call` message over the server's standard input; the server answers on standard output.
 
+A tool that returns a list, or an object that can be `null`, sends it under `result` in `structuredContent` (`{"result": …}`), as its output schema declares; a tool that always returns an object sends that object itself. `content[0].text` carries the value itself, without the wrapper, as JSON text.
+
 ## 🔌 Endpoints
 
 | Tool | Mark | Purpose | Auth |
@@ -30,12 +32,14 @@ List a user's password authentication methods.
   Example `structuredContent`, captured from the test suite's in-memory Graph:
 
 ```json
-[
-  {
-    "id": "password-1",
-    "createdDateTime": "2026-10-20T07:45:00+00:00"
-  }
-]
+{
+  "result": [
+    {
+      "id": "password-1",
+      "createdDateTime": "2026-10-20T07:45:00+00:00"
+    }
+  ]
+}
 ```
 
 - **Errors:**
@@ -70,8 +74,10 @@ Get one password authentication method of a user.
 
 ```json
 {
-  "id": "password-1",
-  "createdDateTime": "2026-10-20T07:45:00+00:00"
+  "result": {
+    "id": "password-1",
+    "createdDateTime": "2026-10-20T07:45:00+00:00"
+  }
 }
 ```
 
@@ -123,9 +129,9 @@ Set a user's password to a value you give or one the server generates.
 
 | Result | Text | When |
 |---|---|---|
-| error result | `Password must be provided or generate_password must be set to True` | `generate_password` is false and no `password` is given. Before any Graph call |
-| error result | `The password length must be 8 to 256 characters, got <n>` | `password_length` outside 8 to 256 with `generate_password`. Before any Graph call |
-| error result | the Graph error, with the password replaced by `***` | Graph refuses the change. The original error is not chained, so no log or result carries the password |
+| error result | `Error calling tool 'reset_user_password_direct': Password must be provided or generate_password must be set to True`; notification `Error directly resetting password for user <user_id>: Password must be provided or generate_password must be set to True` | `generate_password` is false and no `password` is given. Before any Graph call |
+| error result | `Error calling tool 'reset_user_password_direct': The password length must be 8 to 256 characters, got <n>`; notification `Error directly resetting password for user <user_id>: The password length must be 8 to 256 characters, got <n>` | `password_length` outside 8 to 256 with `generate_password`. Before any Graph call |
+| error result | `Error calling tool 'reset_user_password_direct': Error calling tool 'reset_user_password_direct': <reason>`; notification `Error directly resetting password for user <user_id>: <reason>` — the password inside `<reason>` is replaced by `***`; notification `Error directly resetting password for user <user_id>: Error calling tool 'reset_user_password_direct': <reason>`; notification `Error directly resetting password for user <user_id>: <reason>` — the password inside `<reason>` is replaced by `***` | Graph refuses the change. The original error is not chained, so no log or result carries the password |
 | error result | `Error calling tool 'reset_user_password_direct': <reason>`; notification `Error directly resetting password for user <user_id>: <reason>` | Microsoft Graph or sign-in fails |
 
 - **Example:**

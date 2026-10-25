@@ -4,6 +4,8 @@ Part of [Permissions helper](index.md).
 
 Each endpoint is an MCP tool. An AI client calls it with a JSON-RPC `tools/call` message over the server's standard input; the server answers on standard output.
 
+A tool that returns a list, or an object that can be `null`, sends it under `result` in `structuredContent` (`{"result": …}`), as its output schema declares; a tool that always returns an object sends that object itself. `content[0].text` carries the value itself, without the wrapper, as JSON text.
+
 ## 🔌 Endpoints
 
 | Tool | Mark | Purpose | Auth |
@@ -36,7 +38,10 @@ Suggest delegated and application Graph permissions for a common task, from a bu
   "status": "error",
   "message": "Unknown task name: read_user_profiles",
   "available_tasks": [
-    "read_user_profile"
+    "read_user_profile",
+    "update_user_profile",
+    "read_all_users",
+    "reset_user_password"
   ]
 }
 ```
@@ -84,6 +89,18 @@ List the categories and tasks `suggest_permissions_for_task` knows.
         {
           "name": "read_user_profile",
           "description": "Read user profile information"
+        },
+        {
+          "name": "update_user_profile",
+          "description": "Update user profile information"
+        },
+        {
+          "name": "read_all_users",
+          "description": "Read all users' profiles in the organization"
+        },
+        {
+          "name": "reset_user_password",
+          "description": "Reset a user's password"
         }
       ]
     },
@@ -92,6 +109,14 @@ List the categories and tasks `suggest_permissions_for_task` knows.
         {
           "name": "read_user_groups",
           "description": "Read groups a user is a member of"
+        },
+        {
+          "name": "read_all_groups",
+          "description": "Read all groups in the organization"
+        },
+        {
+          "name": "manage_groups",
+          "description": "Create, update, and delete groups, and add/remove members"
         }
       ]
     },
@@ -100,6 +125,10 @@ List the categories and tasks `suggest_permissions_for_task` knows.
         {
           "name": "read_user_mail",
           "description": "Read user's mail"
+        },
+        {
+          "name": "send_mail",
+          "description": "Send mail as the user"
         }
       ]
     },
@@ -108,6 +137,10 @@ List the categories and tasks `suggest_permissions_for_task` knows.
         {
           "name": "read_user_calendar",
           "description": "Read user's calendar"
+        },
+        {
+          "name": "edit_user_calendar",
+          "description": "Read and write to user's calendar"
         }
       ]
     },
@@ -116,6 +149,10 @@ List the categories and tasks `suggest_permissions_for_task` knows.
         {
           "name": "read_user_files",
           "description": "Read user's files"
+        },
+        {
+          "name": "edit_user_files",
+          "description": "Read and write to user's files"
         }
       ]
     },
@@ -124,6 +161,10 @@ List the categories and tasks `suggest_permissions_for_task` knows.
         {
           "name": "read_devices",
           "description": "Read device information"
+        },
+        {
+          "name": "manage_devices",
+          "description": "Manage device configuration"
         }
       ]
     },
@@ -132,6 +173,10 @@ List the categories and tasks `suggest_permissions_for_task` knows.
         {
           "name": "read_audit_logs",
           "description": "Read audit logs"
+        },
+        {
+          "name": "read_sign_in_logs",
+          "description": "Read sign-in activity logs"
         }
       ]
     },
@@ -140,6 +185,10 @@ List the categories and tasks `suggest_permissions_for_task` knows.
         {
           "name": "read_directory",
           "description": "Read directory data (users, groups, apps, etc.)"
+        },
+        {
+          "name": "write_directory",
+          "description": "Read and write directory data (users, groups, apps, etc.)"
         }
       ]
     }
@@ -233,7 +282,7 @@ Search Graph permissions by keyword.
 | Field | Type | Required | Default | Rules |
 |---|---|---|---|---|
 | `search_term` | string | yes | — | Case-insensitive substring of the permission value, display name or description |
-| `permission_type` | string or null | no | `null` | `delegated` or `application` (any case); any other value matches nothing; empty searches both |
+| `permission_type` | string or null | no | `null` | `delegated` or `application` (any case). Omitted or `null` searches both lists; any other value, the empty string included, matches nothing |
 
 - **Response:** `status`, `search_term` (lower-cased), `matching_delegated_permissions`, `matching_application_permissions`, `total_matches`.
 

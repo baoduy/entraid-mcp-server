@@ -34,23 +34,25 @@ No token on the call: the server signs in itself, as its [configuration](../../c
 {"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {"name": "get_user_mfa_status", "arguments": {"user_id": "aoife@contoso.com"}}}
 ```
 
-The result's `structuredContent`:
+The result's `structuredContent` — list and optional results arrive under `result`:
 
 ```json
 {
-  "userPrincipalName": "aoife@contoso.com",
-  "mail": "aoife@contoso.com",
-  "companyName": "Contoso",
-  "mfaStatus": "Enabled",
-  "methods": {
-    "email": false,
-    "fido2": false,
-    "authenticatorApp": false,
-    "password": false,
-    "phone": true,
-    "softwareOath": false,
-    "temporaryAccessPass": false,
-    "windowsHelloForBusiness": false
+  "result": {
+    "userPrincipalName": "aoife@contoso.com",
+    "mail": "aoife@contoso.com",
+    "companyName": "Contoso",
+    "mfaStatus": "Enabled",
+    "methods": {
+      "email": false,
+      "fido2": false,
+      "authenticatorApp": false,
+      "password": false,
+      "phone": true,
+      "softwareOath": false,
+      "temporaryAccessPass": false,
+      "windowsHelloForBusiness": false
+    }
   }
 }
 ```

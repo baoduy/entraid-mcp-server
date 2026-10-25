@@ -4,6 +4,8 @@ Part of [Sign-in logs](index.md).
 
 Each endpoint is an MCP tool. An AI client calls it with a JSON-RPC `tools/call` message over the server's standard input; the server answers on standard output.
 
+A tool that returns a list, or an object that can be `null`, sends it under `result` in `structuredContent` (`{"result": …}`), as its output schema declares; a tool that always returns an object sends that object itself. `content[0].text` carries the value itself, without the wrapper, as JSON text.
+
 ## 🔌 Endpoints
 
 | Tool | Mark | Purpose | Auth |
@@ -21,37 +23,39 @@ List a user's sign-ins over the last `days` days, newest first.
 
 | Field | Type | Required | Default | Rules |
 |---|---|---|---|---|
-| `user_id` | string | yes | — | — |
+| `user_id` | string | yes | — | The user's object id: the filter matches `userId` |
 | `days` | integer | no | `7` | Window is now (UTC) minus `days` to now |
 
 - **Response:** Each sign-in has `id`, `createdDateTime`, user and app fields, `ipAddress`, `clientAppUsed`, `correlationId`, `isInteractive`, `resourceDisplayName`, `status`, `riskInformation`, and `deviceDetail` and `location` when Graph sends them. An empty list comes with the info message `No sign-in logs found for user <user_id> in the last <days> days.`
 
-  Example `structuredContent`, captured from the test suite's in-memory Graph:
+  Example `structuredContent` (abridged: objects over 14 fields show their first 10), captured from the test suite's in-memory Graph:
 
 ```json
-[
-  {
-    "id": "sign-in-1",
-    "createdDateTime": "2026-10-20T07:45:00+00:00",
-    "userId": "7f3c9a",
-    "userDisplayName": null,
-    "userPrincipalName": null,
-    "appDisplayName": null,
-    "appId": null,
-    "ipAddress": null,
-    "clientAppUsed": null,
-    "correlationId": null,
-    "…": "6 more fields"
-  }
-]
+{
+  "result": [
+    {
+      "id": "sign-in-1",
+      "createdDateTime": "2026-10-20T07:45:00+00:00",
+      "userId": "7f3c9a",
+      "userDisplayName": null,
+      "userPrincipalName": null,
+      "appDisplayName": null,
+      "appId": null,
+      "ipAddress": null,
+      "clientAppUsed": null,
+      "correlationId": null,
+      "…": "6 more fields"
+    }
+  ]
+}
 ```
 
 - **Errors:**
 
 | Result | Text | When |
 |---|---|---|
-| error result | notification ends with ` (Ensure the application has AuditLog.Read.All permission)` | Graph answers `Authorization_RequestDenied`. The error result is unchanged |
-| error result | notification `Authentication error: <reason>` | Sign-in cannot be set up (`AuthenticationError`) |
+| error result | `Error calling tool 'get_user_sign_ins': Error calling tool 'get_user_sign_ins': <reason>`; notification `Error fetching sign-in logs for <user_id>: <reason> (Ensure the application has AuditLog.Read.All permission)`; notification `Error fetching sign-in logs for <user_id>: Error calling tool 'get_user_sign_ins': <reason>`; notification `Error fetching sign-in logs for <user_id>: <reason> (Ensure the application has AuditLog.Read.All permission)` | Graph answers `Authorization_RequestDenied`. Only the notification gets the hint |
+| error result | `Error calling tool 'get_user_sign_ins': <reason>`; notification `Authentication error: <reason>` | Sign-in cannot be set up (`AuthenticationError`) |
 | error result | `Error calling tool 'get_user_sign_ins': <reason>`; notification `Error fetching sign-in logs for <user_id>: <reason>` | Microsoft Graph or sign-in fails |
 
 - **Example:**

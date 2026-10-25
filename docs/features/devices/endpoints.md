@@ -4,6 +4,8 @@ Part of [Devices (Intune)](index.md).
 
 Each endpoint is an MCP tool. An AI client calls it with a JSON-RPC `tools/call` message over the server's standard input; the server answers on standard output.
 
+A tool that returns a list, or an object that can be `null`, sends it under `result` in `structuredContent` (`{"result": …}`), as its output schema declares; a tool that always returns an object sends that object itself. `content[0].text` carries the value itself, without the wrapper, as JSON text.
+
 ## 🔌 Endpoints
 
 | Tool | Mark | Purpose | Auth |
@@ -33,24 +35,26 @@ List every Intune managed device, optionally only one operating system.
 
 - **Response:** Each device is the flattened managed-device record: 49 fields plus `hardwareInformation` (see `get_managed_device_by_id`).
 
-  Example `structuredContent`, captured from the test suite's in-memory Graph:
+  Example `structuredContent` (abridged: objects over 14 fields show their first 10), captured from the test suite's in-memory Graph:
 
 ```json
-[
-  {
-    "id": "device-1",
-    "deviceName": "LAPTOP-0042",
-    "managedDeviceName": null,
-    "userId": "7f3c9a",
-    "userPrincipalName": null,
-    "userDisplayName": null,
-    "emailAddress": null,
-    "operatingSystem": "Windows",
-    "osVersion": null,
-    "manufacturer": null,
-    "…": "40 more fields"
-  }
-]
+{
+  "result": [
+    {
+      "id": "device-1",
+      "deviceName": "LAPTOP-0042",
+      "managedDeviceName": null,
+      "userId": "7f3c9a",
+      "userPrincipalName": null,
+      "userDisplayName": null,
+      "emailAddress": null,
+      "operatingSystem": "Windows",
+      "osVersion": null,
+      "manufacturer": null,
+      "…": "40 more fields"
+    }
+  ]
+}
 ```
 
 - **Errors:**
@@ -76,28 +80,30 @@ List the Intune managed devices of one user.
 
 | Field | Type | Required | Default | Rules |
 |---|---|---|---|---|
-| `user_id` | string | yes | — | — |
+| `user_id` | string | yes | — | The user's object id: the filter matches `userId` |
 
 - **Response:** The same device records as `get_all_managed_devices`.
 
-  Example `structuredContent`, captured from the test suite's in-memory Graph:
+  Example `structuredContent` (abridged: objects over 14 fields show their first 10), captured from the test suite's in-memory Graph:
 
 ```json
-[
-  {
-    "id": "device-1",
-    "deviceName": "LAPTOP-0042",
-    "managedDeviceName": null,
-    "userId": "7f3c9a",
-    "userPrincipalName": null,
-    "userDisplayName": null,
-    "emailAddress": null,
-    "operatingSystem": "Windows",
-    "osVersion": null,
-    "manufacturer": null,
-    "…": "40 more fields"
-  }
-]
+{
+  "result": [
+    {
+      "id": "device-1",
+      "deviceName": "LAPTOP-0042",
+      "managedDeviceName": null,
+      "userId": "7f3c9a",
+      "userPrincipalName": null,
+      "userDisplayName": null,
+      "emailAddress": null,
+      "operatingSystem": "Windows",
+      "osVersion": null,
+      "manufacturer": null,
+      "…": "40 more fields"
+    }
+  ]
+}
 ```
 
 - **Errors:**
@@ -127,21 +133,23 @@ Get one Intune managed device: hardware, compliance, enrolment.
 
 - **Response:** One device record, or `null` with the warning `Managed device with ID <device_id> not found.` when Graph returns no object.
 
-  Example `structuredContent`, captured from the test suite's in-memory Graph:
+  Example `structuredContent` (abridged: objects over 14 fields show their first 10), captured from the test suite's in-memory Graph:
 
 ```json
 {
-  "id": "device-1",
-  "deviceName": "LAPTOP-0042",
-  "managedDeviceName": null,
-  "userId": "7f3c9a",
-  "userPrincipalName": null,
-  "userDisplayName": null,
-  "emailAddress": null,
-  "operatingSystem": "Windows",
-  "osVersion": null,
-  "manufacturer": null,
-  "…": "40 more fields"
+  "result": {
+    "id": "device-1",
+    "deviceName": "LAPTOP-0042",
+    "managedDeviceName": null,
+    "userId": "7f3c9a",
+    "userPrincipalName": null,
+    "userDisplayName": null,
+    "emailAddress": null,
+    "operatingSystem": "Windows",
+    "osVersion": null,
+    "manufacturer": null,
+    "…": "40 more fields"
+  }
 }
 ```
 
@@ -175,17 +183,19 @@ List the applications Intune detected on a device.
   Example `structuredContent`, captured from the test suite's in-memory Graph:
 
 ```json
-[
-  {
-    "id": "app-1",
-    "displayName": "Contoso VPN",
-    "version": "2.1.0",
-    "sizeInByte": null,
-    "deviceCount": null,
-    "platform": null,
-    "publisher": null
-  }
-]
+{
+  "result": [
+    {
+      "id": "app-1",
+      "displayName": "Contoso VPN",
+      "version": "2.1.0",
+      "sizeInByte": null,
+      "deviceCount": null,
+      "platform": null,
+      "publisher": null
+    }
+  ]
+}
 ```
 
 - **Errors:**
@@ -218,18 +228,20 @@ List how a device stands against each compliance policy.
   Example `structuredContent`, captured from the test suite's in-memory Graph:
 
 ```json
-[
-  {
-    "id": "state-1",
-    "displayName": "Windows baseline",
-    "state": null,
-    "version": null,
-    "platformType": null,
-    "settingCount": null,
-    "userPrincipalName": null,
-    "userId": null
-  }
-]
+{
+  "result": [
+    {
+      "id": "state-1",
+      "displayName": "Windows baseline",
+      "state": null,
+      "version": null,
+      "platformType": null,
+      "settingCount": null,
+      "userPrincipalName": null,
+      "userId": null
+    }
+  ]
+}
 ```
 
 - **Errors:**
@@ -262,18 +274,20 @@ List how a device stands against each configuration profile.
   Example `structuredContent`, captured from the test suite's in-memory Graph:
 
 ```json
-[
-  {
-    "id": "state-1",
-    "displayName": "Wi-Fi profile",
-    "state": null,
-    "version": null,
-    "platformType": null,
-    "settingCount": null,
-    "userPrincipalName": null,
-    "userId": null
-  }
-]
+{
+  "result": [
+    {
+      "id": "state-1",
+      "displayName": "Wi-Fi profile",
+      "state": null,
+      "version": null,
+      "platformType": null,
+      "settingCount": null,
+      "userPrincipalName": null,
+      "userId": null
+    }
+  ]
+}
 ```
 
 - **Errors:**
@@ -304,18 +318,20 @@ List the tenant's Intune compliance policies.
   Example `structuredContent`, captured from the test suite's in-memory Graph:
 
 ```json
-[
-  {
-    "id": "compliance-1",
-    "displayName": "Windows baseline",
-    "description": null,
-    "version": null,
-    "odataType": "#microsoft.graph.windows10CompliancePolicy",
-    "createdDateTime": null,
-    "lastModifiedDateTime": null,
-    "roleScopeTagIds": null
-  }
-]
+{
+  "result": [
+    {
+      "id": "compliance-1",
+      "displayName": "Windows baseline",
+      "description": null,
+      "version": null,
+      "odataType": "#microsoft.graph.windows10CompliancePolicy",
+      "createdDateTime": null,
+      "lastModifiedDateTime": null,
+      "roleScopeTagIds": null
+    }
+  ]
+}
 ```
 
 - **Errors:**
@@ -346,18 +362,20 @@ List the tenant's Intune configuration profiles.
   Example `structuredContent`, captured from the test suite's in-memory Graph:
 
 ```json
-[
-  {
-    "id": "configuration-1",
-    "displayName": "Wi-Fi profile",
-    "description": null,
-    "version": null,
-    "odataType": "#microsoft.graph.windows10GeneralConfiguration",
-    "createdDateTime": null,
-    "lastModifiedDateTime": null,
-    "roleScopeTagIds": null
-  }
-]
+{
+  "result": [
+    {
+      "id": "configuration-1",
+      "displayName": "Wi-Fi profile",
+      "description": null,
+      "version": null,
+      "odataType": "#microsoft.graph.windows10GeneralConfiguration",
+      "createdDateTime": null,
+      "lastModifiedDateTime": null,
+      "roleScopeTagIds": null
+    }
+  ]
+}
 ```
 
 - **Errors:**
@@ -388,14 +406,16 @@ List the tenant's Intune device categories.
   Example `structuredContent`, captured from the test suite's in-memory Graph:
 
 ```json
-[
-  {
-    "id": "category-1",
-    "displayName": "Corporate",
-    "description": null,
-    "roleScopeTagIds": null
-  }
-]
+{
+  "result": [
+    {
+      "id": "category-1",
+      "displayName": "Corporate",
+      "description": null,
+      "roleScopeTagIds": null
+    }
+  ]
+}
 ```
 
 - **Errors:**

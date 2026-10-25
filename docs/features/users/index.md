@@ -38,22 +38,24 @@ No token on the call: the server signs in itself, as its [configuration](../../c
 {"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {"name": "get_user_by_id", "arguments": {"user_id": "aoife@contoso.com"}}}
 ```
 
-The result's `structuredContent`:
+The result's `structuredContent` — list and optional results arrive under `result`:
 
 ```json
 {
-  "id": "aoife@contoso.com",
-  "displayName": "Aoife Byrne",
-  "mail": "aoife@contoso.com",
-  "userPrincipalName": "aoife@contoso.com",
-  "givenName": "Aoife",
-  "surname": "Byrne",
-  "jobTitle": "Engineer",
-  "officeLocation": "Dublin",
-  "businessPhones": [
-    "+353 1 555 0100"
-  ],
-  "mobilePhone": "+353 87 555 0100"
+  "result": {
+    "id": "aoife@contoso.com",
+    "displayName": "Aoife Byrne",
+    "mail": "aoife@contoso.com",
+    "userPrincipalName": "aoife@contoso.com",
+    "givenName": "Aoife",
+    "surname": "Byrne",
+    "jobTitle": "Engineer",
+    "officeLocation": "Dublin",
+    "businessPhones": [
+      "+353 1 555 0100"
+    ],
+    "mobilePhone": "+353 87 555 0100"
+  }
 }
 ```
 

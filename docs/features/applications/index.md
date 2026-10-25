@@ -36,41 +36,43 @@ No token on the call: the server signs in itself, as its [configuration](../../c
 {"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {"name": "get_application_by_id", "arguments": {"app_id": "payroll-sync-object"}}}
 ```
 
-The result's `structuredContent`:
+The result's `structuredContent` — list and optional results arrive under `result`:
 
 ```json
 {
-  "id": "payroll-sync-object",
-  "appId": "payroll-sync-app",
-  "displayName": "Payroll Sync",
-  "createdDateTime": "2026-10-20T07:45:00+00:00",
-  "signInAudience": "AzureADMyOrg",
-  "publisherDomain": "contoso.com",
-  "tags": [
-    "payroll"
-  ],
-  "appRoleAssignments": [
-    {
-      "id": "assignment-1",
-      "createdDateTime": "2026-10-20T07:45:00Z",
-      "appRoleId": null,
-      "principalDisplayName": null,
-      "principalId": null,
-      "principalType": null,
-      "resourceDisplayName": null,
-      "resourceId": null
-    }
-  ],
-  "oauth2PermissionGrants": [
-    {
-      "id": "grant-1",
-      "clientId": null,
-      "consentType": null,
-      "principalId": null,
-      "resourceId": null,
-      "scope": "User.Read"
-    }
-  ]
+  "result": {
+    "id": "payroll-sync-object",
+    "appId": "payroll-sync-app",
+    "displayName": "Payroll Sync",
+    "createdDateTime": "2026-10-20T07:45:00+00:00",
+    "signInAudience": "AzureADMyOrg",
+    "publisherDomain": "contoso.com",
+    "tags": [
+      "payroll"
+    ],
+    "appRoleAssignments": [
+      {
+        "id": "assignment-1",
+        "createdDateTime": "2026-10-20T07:45:00Z",
+        "appRoleId": null,
+        "principalDisplayName": null,
+        "principalId": null,
+        "principalType": null,
+        "resourceDisplayName": null,
+        "resourceId": null
+      }
+    ],
+    "oauth2PermissionGrants": [
+      {
+        "id": "grant-1",
+        "clientId": null,
+        "consentType": null,
+        "principalId": null,
+        "resourceId": null,
+        "scope": "User.Read"
+      }
+    ]
+  }
 }
 ```
 
@@ -78,7 +80,7 @@ Captured by running the server's real MCP handler against the test suite's in-me
 
 ## 🔄 End-to-end flow
 
-![An AI client calls update_application; the module PATCHes the application in Graph, then re-reads it, finds its service principal by appId, reads that principal's app role assignments and delegated grants, and returns the updated application.](diagrams/applications-update.svg)
+![An AI client calls update_application; the module PATCHes the application in Graph, then re-reads it, finds its service principal by appId, reads that principal's app role assignments and delegated grants, and returns the updated application; when Graph refuses, the client gets an error notification and the error result.](diagrams/applications-update.svg)
 
 `update_application` stands for the feature's writes: one `PATCH`, then the full read of `get_application_by_id`. Nothing is stored and no ETag is sent, so the last write wins. When the read-back of grants fails, the update has still happened and the grants come back empty.
 

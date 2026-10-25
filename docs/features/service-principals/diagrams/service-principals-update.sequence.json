@@ -6,7 +6,7 @@
     "output": "service-principals-update.html",
     "viewBox": [
       1080,
-      582
+      688
     ],
     "column_fit": "spread",
     "quality_profile": "showcase",
@@ -69,6 +69,11 @@
       "from": 294,
       "to": 438,
       "label": "Re-read"
+    },
+    {
+      "from": 460,
+      "to": 544,
+      "label": "Graph refuses"
     }
   ],
   "messages": [
@@ -142,6 +147,30 @@
       "to": "client",
       "y": 426,
       "label": "updated service principal",
+      "variant": "return"
+    },
+    {
+      "id": "m10",
+      "from": "graph",
+      "to": "mod",
+      "y": 472,
+      "label": "error response",
+      "variant": "return"
+    },
+    {
+      "id": "m11",
+      "from": "mod",
+      "to": "tool",
+      "y": 502,
+      "label": "exception",
+      "variant": "return"
+    },
+    {
+      "id": "m12",
+      "from": "tool",
+      "to": "client",
+      "y": 532,
+      "label": "Error updating service principal <id>: <reason> + error result",
       "variant": "return"
     }
   ],

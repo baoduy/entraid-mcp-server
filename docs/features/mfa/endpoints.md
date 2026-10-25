@@ -4,6 +4,8 @@ Part of [MFA](index.md).
 
 Each endpoint is an MCP tool. An AI client calls it with a JSON-RPC `tools/call` message over the server's standard input; the server answers on standard output.
 
+A tool that returns a list, or an object that can be `null`, sends it under `result` in `structuredContent` (`{"result": …}`), as its output schema declares; a tool that always returns an object sends that object itself. `content[0].text` carries the value itself, without the wrapper, as JSON text.
+
 ## 🔌 Endpoints
 
 | Tool | Mark | Purpose | Auth |
@@ -30,19 +32,21 @@ Report which authentication methods a user has registered, and whether that coun
 
 ```json
 {
-  "userPrincipalName": "aoife@contoso.com",
-  "mail": "aoife@contoso.com",
-  "companyName": "Contoso",
-  "mfaStatus": "Enabled",
-  "methods": {
-    "email": false,
-    "fido2": false,
-    "authenticatorApp": false,
-    "password": false,
-    "phone": true,
-    "softwareOath": false,
-    "temporaryAccessPass": false,
-    "windowsHelloForBusiness": false
+  "result": {
+    "userPrincipalName": "aoife@contoso.com",
+    "mail": "aoife@contoso.com",
+    "companyName": "Contoso",
+    "mfaStatus": "Enabled",
+    "methods": {
+      "email": false,
+      "fido2": false,
+      "authenticatorApp": false,
+      "password": false,
+      "phone": true,
+      "softwareOath": false,
+      "temporaryAccessPass": false,
+      "windowsHelloForBusiness": false
+    }
   }
 }
 ```
@@ -51,7 +55,7 @@ Report which authentication methods a user has registered, and whether that coun
 
 | Result | Text | When |
 |---|---|---|
-| error result | notification `Authentication error: <reason>` | Sign-in cannot be set up (`AuthenticationError`) |
+| error result | `Error calling tool 'get_user_mfa_status': <reason>`; notification `Authentication error: <reason>` | Sign-in cannot be set up (`AuthenticationError`) |
 | error result | `Error calling tool 'get_user_mfa_status': <reason>`; notification `Error fetching MFA status for <user_id>: <reason>` | Microsoft Graph or sign-in fails |
 
 - **Example:**
@@ -78,31 +82,33 @@ Report MFA status for every user who is a direct member of a group.
   Example `structuredContent`, captured from the test suite's in-memory Graph:
 
 ```json
-[
-  {
-    "userPrincipalName": "aoife@contoso.com",
-    "mail": "aoife@contoso.com",
-    "companyName": "Contoso",
-    "mfaStatus": "Enabled",
-    "methods": {
-      "email": false,
-      "fido2": false,
-      "authenticatorApp": false,
-      "password": false,
-      "phone": true,
-      "softwareOath": false,
-      "temporaryAccessPass": false,
-      "windowsHelloForBusiness": false
+{
+  "result": [
+    {
+      "userPrincipalName": "aoife@contoso.com",
+      "mail": "aoife@contoso.com",
+      "companyName": "Contoso",
+      "mfaStatus": "Enabled",
+      "methods": {
+        "email": false,
+        "fido2": false,
+        "authenticatorApp": false,
+        "password": false,
+        "phone": true,
+        "softwareOath": false,
+        "temporaryAccessPass": false,
+        "windowsHelloForBusiness": false
+      }
     }
-  }
-]
+  ]
+}
 ```
 
 - **Errors:**
 
 | Result | Text | When |
 |---|---|---|
-| error result | notification `Authentication error: <reason>` | Sign-in cannot be set up (`AuthenticationError`) |
+| error result | `Error calling tool 'get_group_mfa_status': <reason>`; notification `Authentication error: <reason>` | Sign-in cannot be set up (`AuthenticationError`) |
 | error result | `Error calling tool 'get_group_mfa_status': <reason>`; notification `Error fetching group MFA status for <group_id>: <reason>` | Microsoft Graph or sign-in fails |
 
 - **Example:**
