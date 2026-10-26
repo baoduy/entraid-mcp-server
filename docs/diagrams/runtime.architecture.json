@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "entraid-mcp-server runtime architecture",
+    "output": "runtime.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/baoduy/entraid-mcp-server.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "090ba698766d32978c02ca904712f9517e3b53f8"
+    }
+  },
+  "components": [
+    { "id": "client", "type": "external", "label": "AI client", "sublabel": "Claude Desktop, Cursor", "pos": [40, 80], "size": [140, 64] },
+    { "id": "fastmcp", "type": "backend", "label": "FastMCP server", "sublabel": "EntraID MCP Server", "pos": [330, 80], "size": [150, 64], "tag": "stdio", "sources": [{ "path": "src/msgraph_mcp_server/server.py", "line": 35, "end_line": 40, "label": "FastMCP + tool marks" }] },
+    { "id": "tools", "type": "backend", "label": "Tool functions", "sublabel": "48 @mcp.tool in server.py", "pos": [580, 80], "size": [160, 64], "sources": [{ "path": "src/msgraph_mcp_server/server.py", "line": 46, "end_line": 88, "label": "_reports_errors" }, { "path": "src/msgraph_mcp_server/server.py", "line": 91, "end_line": 107, "label": "search_users tool" }] },
+    { "id": "resources", "type": "backend", "label": "Resource modules", "sublabel": "resources/*.py (11)", "pos": [820, 80], "size": [150, 64], "sources": [{ "path": "src/msgraph_mcp_server/resources/users.py", "line": 17, "end_line": 38, "label": "users.search_users" }] },
+    { "id": "graphclient", "type": "backend", "label": "GraphClient", "sublabel": "v1.0 + beta, built once", "pos": [1080, 80], "size": [150, 64], "sources": [{ "path": "src/msgraph_mcp_server/utils/graph_client.py", "line": 14, "end_line": 57, "label": "GraphClient" }] },
+    { "id": "graphv1", "type": "cloud", "label": "Microsoft Graph v1.0", "sublabel": "graph.microsoft.com/v1.0", "pos": [1340, 80], "size": [170, 64] },
+    { "id": "graphbeta", "type": "cloud", "label": "Microsoft Graph beta", "sublabel": "Intune device tools", "pos": [1340, 230], "size": [170, 64], "sources": [{ "path": "src/msgraph_mcp_server/resources/managed_devices.py", "line": 163, "end_line": 184, "label": "get_beta_client" }] },
+    { "id": "auth", "type": "security", "label": "GraphAuthManager", "sublabel": "secret, certificate or default", "pos": [1080, 380], "size": [150, 64], "sources": [{ "path": "src/msgraph_mcp_server/auth/graph_auth.py", "line": 107, "end_line": 167, "label": "_build_credential" }] },
+    { "id": "entra", "type": "cloud", "label": "Microsoft Entra ID", "sublabel": "token for .default scope", "pos": [1340, 380], "size": [170, 64] },
+    { "id": "main", "type": "backend", "label": "main()", "sublabel": "entraid-mcp-server, python -m", "pos": [330, 260], "size": [150, 64], "sources": [{ "path": "src/msgraph_mcp_server/server.py", "line": 996, "end_line": 1010, "label": "main" }, { "path": "src/msgraph_mcp_server/__main__.py", "line": 1, "end_line": 6, "label": "module runner" }] },
+    { "id": "envfile", "type": "database", "label": ".env settings file", "sublabel": "first of 4 places", "pos": [330, 520], "size": [150, 64], "sources": [{ "path": "src/msgraph_mcp_server/auth/graph_auth.py", "line": 40, "end_line": 64, "label": "load_env_files" }] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "Local process: entraid-mcp-server", "wraps": ["fastmcp", "tools", "resources", "graphclient", "auth", "main"] },
+    { "kind": "security-group", "label": "Microsoft cloud (tenant)", "wraps": ["graphv1", "graphbeta", "entra"] }
+  ],
+  "connections": [
+    { "id": "client-to-fastmcp", "from": "client", "to": "fastmcp", "label": "tools/call over stdio", "variant": "emphasis" },
+    { "id": "fastmcp-to-tools", "from": "fastmcp", "to": "tools", "label": "dispatch", "variant": "emphasis" },
+    { "id": "tools-to-resources", "from": "tools", "to": "resources", "label": "await", "variant": "emphasis" },
+    { "id": "resources-to-graphclient", "from": "resources", "to": "graphclient", "label": "get_client", "variant": "emphasis" },
+    { "id": "graphclient-to-v1", "from": "graphclient", "to": "graphv1", "label": "HTTPS", "variant": "emphasis" },
+    { "id": "graphclient-to-beta", "from": "graphclient", "to": "graphbeta", "label": "beta", "variant": "dashed", "fromSide": "right", "toSide": "left" },
+    { "id": "graphclient-to-auth", "from": "graphclient", "to": "auth", "label": "first call signs in", "variant": "security", "fromSide": "bottom", "toSide": "top" },
+    { "id": "auth-to-entra", "from": "auth", "to": "entra", "label": "get token", "variant": "security" },
+    { "id": "main-to-fastmcp", "from": "main", "to": "fastmcp", "label": "mcp.run()", "fromSide": "top", "toSide": "bottom" },
+    { "id": "main-to-envfile", "from": "main", "to": "envfile", "label": "load_env_files", "variant": "dashed", "fromSide": "bottom", "toSide": "top" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Start-up", "items": ["main() sets logging on standard error", "then loads the first .env found, never overriding a set variable", "then serves stdio with mcp.run()"] },
+    { "dot": "rose", "title": "Sign-in", "items": ["Built on the first Graph call, then cached", "Order: client secret, certificate, DefaultAzureCredential", "TENANT_ID or AZURE_TENANT_ID, and so on"] },
+    { "dot": "emerald", "title": "Tool marks", "items": ["34 read-only", "5 change the tenant, not destructive", "9 destructive: deletes, removes, reset, updates"] },
+    { "dot": "amber", "title": "Errors", "items": ["_reports_errors sends one error notification", "the client gets Error calling tool '<name>': <reason>", "no retry or timeout of the server's own"] }
+  ]
+}

@@ -1,0 +1,345 @@
+{
+  "password reset with a generated password": {
+    "status": null,
+    "userId": null,
+    "passwordResetRequired": null,
+    "message": null,
+    "generated_password": null
+  },
+  "user search": [
+    {
+      "id": null,
+      "displayName": null,
+      "mail": null,
+      "userPrincipalName": null,
+      "givenName": null,
+      "surname": null,
+      "jobTitle": null,
+      "officeLocation": null,
+      "businessPhones": null,
+      "mobilePhone": null
+    }
+  ],
+  "group list": [
+    {
+      "id": null,
+      "displayName": null,
+      "mail": null,
+      "mailNickname": null,
+      "description": null,
+      "groupTypes": null,
+      "securityEnabled": null,
+      "mailEnabled": null,
+      "createdDateTime": null
+    }
+  ],
+  "group search": [
+    {
+      "id": null,
+      "displayName": null,
+      "mail": null,
+      "mailNickname": null,
+      "description": null,
+      "groupTypes": null,
+      "securityEnabled": null,
+      "mailEnabled": null,
+      "createdDateTime": null
+    }
+  ],
+  "group member list": [
+    {
+      "id": null,
+      "displayName": null,
+      "mail": null,
+      "userPrincipalName": null,
+      "givenName": null,
+      "surname": null,
+      "jobTitle": null,
+      "officeLocation": null,
+      "businessPhones": null,
+      "mobilePhone": null,
+      "type": null
+    }
+  ],
+  "group creation when the name already exists": {
+    "id": null,
+    "displayName": null,
+    "mail": null,
+    "mailNickname": null,
+    "description": null,
+    "groupTypes": null,
+    "securityEnabled": null,
+    "mailEnabled": null,
+    "visibility": null,
+    "createdDateTime": null,
+    "status": null
+  },
+  "group MFA report": [
+    {
+      "userPrincipalName": null,
+      "mail": null,
+      "companyName": null,
+      "mfaStatus": null,
+      "methods": {
+        "email": null,
+        "fido2": null,
+        "authenticatorApp": null,
+        "password": null,
+        "phone": null,
+        "softwareOath": null,
+        "temporaryAccessPass": null,
+        "windowsHelloForBusiness": null
+      }
+    }
+  ],
+  "managed device list": [
+    {
+      "id": null,
+      "deviceName": null,
+      "managedDeviceName": null,
+      "userId": null,
+      "userPrincipalName": null,
+      "userDisplayName": null,
+      "emailAddress": null,
+      "operatingSystem": null,
+      "osVersion": null,
+      "manufacturer": null,
+      "model": null,
+      "serialNumber": null,
+      "deviceType": null,
+      "chassisType": null,
+      "joinType": null,
+      "azureADDeviceId": null,
+      "azureADRegistered": null,
+      "autopilotEnrolled": null,
+      "enrolledDateTime": null,
+      "enrollmentProfileName": null,
+      "enrolledByUserPrincipalName": null,
+      "managementAgent": null,
+      "managementState": null,
+      "ownerType": null,
+      "managedDeviceOwnerType": null,
+      "complianceState": null,
+      "complianceGracePeriodExpirationDateTime": null,
+      "jailBroken": null,
+      "isEncrypted": null,
+      "isSupervised": null,
+      "deviceEnrollmentType": null,
+      "deviceRegistrationState": null,
+      "deviceCategoryDisplayName": null,
+      "lastSyncDateTime": null,
+      "freeStorageSpaceInBytes": null,
+      "totalStorageSpaceInBytes": null,
+      "physicalMemoryInBytes": null,
+      "processorArchitecture": null,
+      "wiFiMacAddress": null,
+      "ethernetMacAddress": null,
+      "imei": null,
+      "meid": null,
+      "iccid": null,
+      "udid": null,
+      "notes": null,
+      "partnerReportedThreatState": null,
+      "windowsActiveMalwareCount": null,
+      "windowsRemediatedMalwareCount": null,
+      "roleScopeTagIds": null,
+      "hardwareInformation": {
+        "serialNumber": null,
+        "manufacturer": null,
+        "model": null,
+        "totalStorageSpace": null,
+        "freeStorageSpace": null,
+        "imei": null,
+        "meid": null,
+        "operatingSystemLanguage": null,
+        "wifiMac": null
+      }
+    }
+  ],
+  "managed devices by user": [
+    {
+      "id": null,
+      "deviceName": null,
+      "managedDeviceName": null,
+      "userId": null,
+      "userPrincipalName": null,
+      "userDisplayName": null,
+      "emailAddress": null,
+      "operatingSystem": null,
+      "osVersion": null,
+      "manufacturer": null,
+      "model": null,
+      "serialNumber": null,
+      "deviceType": null,
+      "chassisType": null,
+      "joinType": null,
+      "azureADDeviceId": null,
+      "azureADRegistered": null,
+      "autopilotEnrolled": null,
+      "enrolledDateTime": null,
+      "enrollmentProfileName": null,
+      "enrolledByUserPrincipalName": null,
+      "managementAgent": null,
+      "managementState": null,
+      "ownerType": null,
+      "managedDeviceOwnerType": null,
+      "complianceState": null,
+      "complianceGracePeriodExpirationDateTime": null,
+      "jailBroken": null,
+      "isEncrypted": null,
+      "isSupervised": null,
+      "deviceEnrollmentType": null,
+      "deviceRegistrationState": null,
+      "deviceCategoryDisplayName": null,
+      "lastSyncDateTime": null,
+      "freeStorageSpaceInBytes": null,
+      "totalStorageSpaceInBytes": null,
+      "physicalMemoryInBytes": null,
+      "processorArchitecture": null,
+      "wiFiMacAddress": null,
+      "ethernetMacAddress": null,
+      "imei": null,
+      "meid": null,
+      "iccid": null,
+      "udid": null,
+      "notes": null,
+      "partnerReportedThreatState": null,
+      "windowsActiveMalwareCount": null,
+      "windowsRemediatedMalwareCount": null,
+      "roleScopeTagIds": null,
+      "hardwareInformation": {
+        "serialNumber": null,
+        "manufacturer": null,
+        "model": null,
+        "totalStorageSpace": null,
+        "freeStorageSpace": null,
+        "imei": null,
+        "meid": null,
+        "operatingSystemLanguage": null,
+        "wifiMac": null
+      }
+    }
+  ],
+  "audit logs by user": [
+    {
+      "id": null,
+      "activityDateTime": null,
+      "activityDisplayName": null,
+      "category": null,
+      "operationType": null,
+      "result": null,
+      "resultReason": null,
+      "initiatedBy": {
+        "user": {
+          "id": null,
+          "displayName": null,
+          "userPrincipalName": null
+        },
+        "app": {
+          "appId": null,
+          "displayName": null
+        }
+      },
+      "targetResources": [
+        {
+          "id": null,
+          "displayName": null,
+          "type": null,
+          "userPrincipalName": null,
+          "modifiedProperties": [
+            {
+              "displayName": null,
+              "oldValue": null,
+              "newValue": null
+            }
+          ]
+        }
+      ],
+      "loggedByService": null,
+      "correlationId": null,
+      "additionalDetails": [
+        {
+          "key": null,
+          "value": null
+        }
+      ]
+    }
+  ],
+  "sign-in logs by user": [
+    {
+      "id": null,
+      "createdDateTime": null,
+      "userId": null,
+      "userDisplayName": null,
+      "userPrincipalName": null,
+      "appDisplayName": null,
+      "appId": null,
+      "ipAddress": null,
+      "clientAppUsed": null,
+      "correlationId": null,
+      "isInteractive": null,
+      "resourceDisplayName": null,
+      "status": {
+        "errorCode": null,
+        "failureReason": null,
+        "additionalDetails": null
+      },
+      "riskInformation": {
+        "riskDetail": null,
+        "riskLevelAggregated": null,
+        "riskLevelDuringSignIn": null,
+        "riskState": null,
+        "riskEventTypes": null
+      },
+      "deviceDetail": {
+        "deviceId": null,
+        "displayName": null,
+        "operatingSystem": null,
+        "browser": null,
+        "isCompliant": null,
+        "isManaged": null,
+        "trustType": null
+      },
+      "location": {
+        "city": null,
+        "state": null,
+        "countryOrRegion": null,
+        "coordinates": {
+          "latitude": null,
+          "longitude": null
+        }
+      }
+    }
+  ],
+  "application details": {
+    "id": null,
+    "appId": null,
+    "displayName": null,
+    "createdDateTime": null,
+    "signInAudience": null,
+    "publisherDomain": null,
+    "tags": null,
+    "appRoleAssignments": [
+      {
+        "id": null,
+        "createdDateTime": null,
+        "appRoleId": null,
+        "principalDisplayName": null,
+        "principalId": null,
+        "principalType": null,
+        "resourceDisplayName": null,
+        "resourceId": null
+      }
+    ],
+    "oauth2PermissionGrants": [
+      {
+        "id": null,
+        "clientId": null,
+        "consentType": null,
+        "principalId": null,
+        "resourceId": null,
+        "scope": null
+      }
+    ]
+  }
+}

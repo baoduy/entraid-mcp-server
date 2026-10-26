@@ -1,0 +1,331 @@
+{
+  "add_group_member": {
+    "group_id": {
+      "required": true,
+      "default": null
+    },
+    "member_id": {
+      "required": true,
+      "default": null
+    }
+  },
+  "add_group_owner": {
+    "group_id": {
+      "required": true,
+      "default": null
+    },
+    "owner_id": {
+      "required": true,
+      "default": null
+    }
+  },
+  "create_application": {
+    "app_data": {
+      "required": true,
+      "default": null
+    }
+  },
+  "create_group": {
+    "group_data": {
+      "required": true,
+      "default": null
+    }
+  },
+  "create_service_principal": {
+    "sp_data": {
+      "required": true,
+      "default": null
+    }
+  },
+  "delete_application": {
+    "app_id": {
+      "required": true,
+      "default": null
+    }
+  },
+  "delete_group": {
+    "group_id": {
+      "required": true,
+      "default": null
+    }
+  },
+  "delete_service_principal": {
+    "sp_id": {
+      "required": true,
+      "default": null
+    }
+  },
+  "get_all_graph_permissions": {},
+  "get_all_groups": {
+    "limit": {
+      "required": false,
+      "default": 100
+    }
+  },
+  "get_all_managed_devices": {
+    "filter_os": {
+      "required": false,
+      "default": null
+    }
+  },
+  "get_application_by_id": {
+    "app_id": {
+      "required": true,
+      "default": null
+    }
+  },
+  "get_conditional_access_policies": {},
+  "get_conditional_access_policy_by_id": {
+    "policy_id": {
+      "required": true,
+      "default": null
+    }
+  },
+  "get_detected_apps_for_device": {
+    "device_id": {
+      "required": true,
+      "default": null
+    }
+  },
+  "get_device_categories": {},
+  "get_device_compliance_policies": {},
+  "get_device_compliance_policy_states": {
+    "device_id": {
+      "required": true,
+      "default": null
+    }
+  },
+  "get_device_configuration_states": {
+    "device_id": {
+      "required": true,
+      "default": null
+    }
+  },
+  "get_device_configurations": {},
+  "get_group_by_id": {
+    "group_id": {
+      "required": true,
+      "default": null
+    }
+  },
+  "get_group_members": {
+    "group_id": {
+      "required": true,
+      "default": null
+    },
+    "limit": {
+      "required": false,
+      "default": 100
+    }
+  },
+  "get_group_mfa_status": {
+    "group_id": {
+      "required": true,
+      "default": null
+    }
+  },
+  "get_managed_device_by_id": {
+    "device_id": {
+      "required": true,
+      "default": null
+    }
+  },
+  "get_managed_devices_by_user": {
+    "user_id": {
+      "required": true,
+      "default": null
+    }
+  },
+  "get_privileged_users": {},
+  "get_service_principal_by_id": {
+    "sp_id": {
+      "required": true,
+      "default": null
+    }
+  },
+  "get_user_audit_logs": {
+    "user_id": {
+      "required": true,
+      "default": null
+    },
+    "days": {
+      "required": false,
+      "default": 30
+    }
+  },
+  "get_user_by_id": {
+    "user_id": {
+      "required": true,
+      "default": null
+    }
+  },
+  "get_user_groups": {
+    "user_id": {
+      "required": true,
+      "default": null
+    }
+  },
+  "get_user_mfa_status": {
+    "user_id": {
+      "required": true,
+      "default": null
+    }
+  },
+  "get_user_password_method": {
+    "user_id": {
+      "required": true,
+      "default": null
+    },
+    "method_id": {
+      "required": true,
+      "default": null
+    }
+  },
+  "get_user_roles": {
+    "user_id": {
+      "required": true,
+      "default": null
+    }
+  },
+  "get_user_sign_ins": {
+    "user_id": {
+      "required": true,
+      "default": null
+    },
+    "days": {
+      "required": false,
+      "default": 7
+    }
+  },
+  "list_applications": {
+    "limit": {
+      "required": false,
+      "default": 100
+    }
+  },
+  "list_permission_categories_and_tasks": {},
+  "list_service_principals": {
+    "limit": {
+      "required": false,
+      "default": 100
+    }
+  },
+  "list_user_password_methods": {
+    "user_id": {
+      "required": true,
+      "default": null
+    }
+  },
+  "remove_group_member": {
+    "group_id": {
+      "required": true,
+      "default": null
+    },
+    "member_id": {
+      "required": true,
+      "default": null
+    }
+  },
+  "remove_group_owner": {
+    "group_id": {
+      "required": true,
+      "default": null
+    },
+    "owner_id": {
+      "required": true,
+      "default": null
+    }
+  },
+  "reset_user_password_direct": {
+    "user_id": {
+      "required": true,
+      "default": null
+    },
+    "password": {
+      "required": false,
+      "default": null
+    },
+    "require_change_on_next_sign_in": {
+      "required": false,
+      "default": true
+    },
+    "generate_password": {
+      "required": false,
+      "default": false
+    },
+    "password_length": {
+      "required": false,
+      "default": 12
+    }
+  },
+  "search_groups_by_name": {
+    "name": {
+      "required": true,
+      "default": null
+    },
+    "limit": {
+      "required": false,
+      "default": 50
+    }
+  },
+  "search_permissions": {
+    "search_term": {
+      "required": true,
+      "default": null
+    },
+    "permission_type": {
+      "required": false,
+      "default": null
+    }
+  },
+  "search_users": {
+    "query": {
+      "required": true,
+      "default": null
+    },
+    "limit": {
+      "required": false,
+      "default": 10
+    }
+  },
+  "suggest_permissions_for_task": {
+    "task_category": {
+      "required": true,
+      "default": null
+    },
+    "task_name": {
+      "required": true,
+      "default": null
+    }
+  },
+  "update_application": {
+    "app_id": {
+      "required": true,
+      "default": null
+    },
+    "app_data": {
+      "required": true,
+      "default": null
+    }
+  },
+  "update_group": {
+    "group_id": {
+      "required": true,
+      "default": null
+    },
+    "group_data": {
+      "required": true,
+      "default": null
+    }
+  },
+  "update_service_principal": {
+    "sp_id": {
+      "required": true,
+      "default": null
+    },
+    "sp_data": {
+      "required": true,
+      "default": null
+    }
+  }
+}
