@@ -19,7 +19,7 @@ Report which authentication methods a user has registered, and whether that coun
 
 - **Mark:** read-only
 - **Auth:** the identity the server signed in as ([configuration](../../configuration.md)); Microsoft Graph checks its permissions, the server checks none
-- **Microsoft Graph:** `GET /users/{user_id}?$select=companyName`, then `GET /users/{user_id}/authentication/methods`.
+- **Microsoft Graph:** `GET /users/{user_id}?$select=companyName,mail`, then `GET /users/{user_id}/authentication/methods`.
 - **Request:**
 
 | Field | Type | Required | Default | Rules |

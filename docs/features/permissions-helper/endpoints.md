@@ -214,12 +214,12 @@ List every delegated and application permission Microsoft Graph publishes.
 
 - **Mark:** read-only
 - **Auth:** the identity the server signed in as ([configuration](../../configuration.md)); Microsoft Graph checks its permissions, the server checks none
-- **Microsoft Graph:** `GET /servicePrincipals/00000003-0000-0000-c000-000000000000` (the Microsoft Graph application id passed as the object id).
+- **Microsoft Graph:** `GET /servicePrincipals?$filter=appId eq '00000003-0000-0000-c000-000000000000'` (Microsoft Graph's application id); the first match is used.
 - **Request:**
 
   No arguments.
 
-- **Response:** `status: success`, `delegated_permissions` (from `oauth2PermissionScopes`) and `application_permissions` (from `appRoles`). When Graph returns no object: `{"status": "error", "message": "Microsoft Graph service principal not found"}`.
+- **Response:** `status: success`, `delegated_permissions` (from `oauth2PermissionScopes`) and `application_permissions` (from `appRoles`). When no service principal matches: `{"status": "error", "message": "Microsoft Graph service principal not found"}`.
 
   Example `structuredContent`, captured from the test suite's in-memory Graph:
 

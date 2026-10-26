@@ -32,7 +32,7 @@ Search users by name or email.
 
 - **Response:** Each user has `id`, `displayName`, `mail`, `userPrincipalName`, `givenName`, `surname`, `jobTitle`, `officeLocation`, `businessPhones`, `mobilePhone`.
 
-  Example `structuredContent` (taken from the tool function: a validating MCP client rejects it, see Errors), captured from the test suite's in-memory Graph:
+  Example `structuredContent`, captured through an MCP client call against the test suite's in-memory Graph:
 
 ```json
 {
@@ -59,7 +59,6 @@ Search users by name or email.
 
 | Result | Text | When |
 |---|---|---|
-| A client that validates structured output | client-side: `Invalid structured content returned by tool search_users: ... is not of type 'string'` | The tool declares every user field a string, but `businessPhones` is a list and empty fields are `null`. Any result with a user fails this check; an empty result passes. |
 | error result | `Error calling tool 'search_users': <reason>`; notification `Authentication error: <reason>` | Sign-in cannot be set up (`AuthenticationError`) |
 | error result | `Error calling tool 'search_users': <reason>`; notification `Error searching users: <reason>` | Microsoft Graph or sign-in fails |
 
@@ -260,7 +259,6 @@ List the directory roles a user holds directly.
 
 A failed call reaches the AI client twice: one error notification (`<message>: <reason>`, sent through the MCP log channel) and the error result `Error calling tool '<tool>': <reason>` with `isError: true`. The reason is the text of the exception Microsoft Graph, the SDK or the server raised. The server sets no timeout and no retry of its own and keeps no state between calls. Results that report a known case — `already_exists`, `not_found`, a dynamic group's `status: error`, the permission helper's `status: error` — are normal results, not errors.
 
-- `search_users` declares every user field a string, but `businessPhones` is a list and empty fields are `null`. A client that validates structured output (the Python MCP SDK client does) rejects any result that holds a user; the text content still carries the JSON.
 - `search_users` sends `ConsistencyLevel: eventual`: a user created moments ago may not be found yet.
 - `get_privileged_users` reads activated directory roles only (`/directoryRoles`, first page); role-eligible assignments are not read, and only user members are listed.
 - `get_user_groups` makes one extra Graph call per group the user belongs to; `get_user_roles` one per directory role.

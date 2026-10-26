@@ -71,9 +71,3 @@ Called again for the same member, the result is `{"status": "already_exists", "m
 - [Users](../users/index.md) — reach for it to find the user or read the groups a user is already in.
 - [MFA](../mfa/index.md) — reach for it to report MFA status for every member of a group.
 - [Conditional access](../conditional-access/index.md) — reach for it to see which policies include or exclude a group.
-
-## ❓ Open questions
-
-| Question | Why it matters | Checked | Who can answer |
-|---|---|---|---|
-| Is the prefix match of `search_groups_by_name` intended, or should it match anywhere in the name as its tool description ("partial match") says? | Admins searching for a word in the middle of a name get nothing back. | `groups.search_groups_by_name` filters `startswith(displayName, …)`; the tool's description says case-insensitive partial match. | Maintainer (baoduy) |

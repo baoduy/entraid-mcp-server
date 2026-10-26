@@ -19,7 +19,7 @@ List the tenant's conditional access policies as flat rows.
 
 - **Mark:** read-only
 - **Auth:** the identity the server signed in as ([configuration](../../configuration.md)); Microsoft Graph checks its permissions, the server checks none
-- **Microsoft Graph:** `GET /identity/conditionalAccess/policies` — the first page only — then `GET /groups/{id}` for each included or excluded group id.
+- **Microsoft Graph:** `GET /identity/conditionalAccess/policies`, following `@odata.nextLink` until every page is read, then `GET /groups/{id}` for each included or excluded group id.
 - **Request:**
 
   No arguments.
@@ -109,7 +109,6 @@ Get one conditional access policy as a flat row.
 
 A failed call reaches the AI client twice: one error notification (`<message>: <reason>`, sent through the MCP log channel) and the error result `Error calling tool '<tool>': <reason>` with `isError: true`. The reason is the text of the exception Microsoft Graph, the SDK or the server raised. The server sets no timeout and no retry of its own and keeps no state between calls. Results that report a known case — `already_exists`, `not_found`, a dynamic group's `status: error`, the permission helper's `status: error` — are normal results, not errors.
 
-- `get_conditional_access_policies` reads the first page of policies only; it does not follow `@odata.nextLink`.
 - Each included or excluded group costs one Graph call; a group that cannot be read shows as `Unknown Group (<id>)`.
 - A policy part that cannot be parsed is returned with empty strings and a warning in the server log, not an error.
 - Values are flattened for reading, not round-tripping: lists become `; `-joined strings and nested objects their Python text form.

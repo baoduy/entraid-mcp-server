@@ -65,7 +65,7 @@ Captured by running the server's real MCP handler against the test suite's in-me
 
 ![An AI client calls search_users; the tool asks the users module, which sends GET /users with $search and ConsistencyLevel eventual to Microsoft Graph, follows nextLink until the limit, and returns up to limit users or, when Graph refuses, an error notification and error result.](diagrams/users-search.svg)
 
-`search_users` stands for the feature: the most common way in. Nothing is stored and no event is raised — the flow ends at Microsoft Graph. The search reads with eventual consistency, so a user created moments ago may be missing. The result passes back unchanged, but the tool declares every field a string: a client that validates structured output rejects a result holding a user (see [Endpoints](endpoints.md), Errors & limits).
+`search_users` stands for the feature: the most common way in. Nothing is stored and no event is raised — the flow ends at Microsoft Graph. The search reads with eventual consistency, so a user created moments ago may be missing.
 
 ## 📚 Pages
 
@@ -78,9 +78,3 @@ Captured by running the server's real MCP handler against the test suite's in-me
 - [MFA](../mfa/index.md) — reach for it to check the authentication methods a user registered.
 - [Sign-in logs](../sign-in-logs/index.md) — reach for it to see where and how a user signed in.
 - [Audit logs](../audit-logs/index.md) — reach for it to see what a user changed.
-
-## ❓ Open questions
-
-| Question | Why it matters | Checked | Who can answer |
-|---|---|---|---|
-| Do Claude Desktop and Cursor validate a tool's structured output, so that every `search_users` result holding a user is rejected? | If they do, admins cannot search users from those clients until the tool's declared type is fixed. | Called `search_users` through the Python MCP SDK client against the test suite's Graph: rejected with `... is not of type 'string'`. The clients' own behaviour is not in this repo. | Maintainer (baoduy), by trying each client |

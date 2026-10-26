@@ -555,7 +555,7 @@ Remove an owner from a group.
 
 A failed call reaches the AI client twice: one error notification (`<message>: <reason>`, sent through the MCP log channel) and the error result `Error calling tool '<tool>': <reason>` with `isError: true`. The reason is the text of the exception Microsoft Graph, the SDK or the server raised. The server sets no timeout and no retry of its own and keeps no state between calls. Results that report a known case — `already_exists`, `not_found`, a dynamic group's `status: error`, the permission helper's `status: error` — are normal results, not errors.
 
-- `search_groups_by_name` is a prefix match (`startswith`), not a contains match, though its tool description says partial match.
+- `search_groups_by_name` is a prefix match (`startswith`), not a contains match.
 - Page size for `get_all_groups`, `search_groups_by_name` and `get_group_members` is `limit`, capped at 999 (Graph's largest `$top` there); a `limit` of 0 or less returns `[]` without a Graph call.
 - Membership checks in `add_group_member` and `remove_group_member` read Graph with `ConsistencyLevel: eventual`: a change made moments earlier may not be seen yet.
 - Members of a dynamic group cannot be added or removed: both tools return `status: error` with `isDynamicGroup: true` and write nothing.

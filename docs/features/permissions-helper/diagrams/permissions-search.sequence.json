@@ -14,7 +14,7 @@
       "url": "https://github.com/baoduy/entraid-mcp-server.git",
       "provider": "github",
       "link_mode": "web",
-      "revision": "090ba698766d32978c02ca904712f9517e3b53f8"
+      "revision": "c4555959ab4766769df37a0fbac517c383df70f5"
     }
   },
   "participants": [
@@ -46,8 +46,8 @@
       "sources": [
         {
           "path": "src/msgraph_mcp_server/resources/permissions_helper.py",
-          "line": 194,
-          "end_line": 320,
+          "line": 195,
+          "end_line": 317,
           "label": "permissions_helper"
         }
       ]
@@ -93,7 +93,7 @@
       "from": "mod",
       "to": "graph",
       "y": 230,
-      "label": "GET /servicePrincipals/00000003-0000-0000-c000-000000000000",
+      "label": "GET /servicePrincipals $filter=appId eq '00000003-…', first match",
       "variant": "emphasis"
     },
     {

@@ -463,11 +463,11 @@ rect.c-bg-rect { fill: var(--bg); }
         </g>
         </g>
 
-        <g data-edge-from="mod" data-edge-to="graph" data-edge-label="GET /servicePrincipals/00000003-0000-0000-c000-000000000000" data-edge-key="2" data-edge-id="m3">
+        <g data-edge-from="mod" data-edge-to="graph" data-edge-label="GET /servicePrincipals $filter=appId eq '00000003-…', first match" data-edge-key="2" data-edge-id="m3">
           <path data-composition-edge-from="mod" data-composition-edge-to="graph" data-composition-edge-id="m3" data-composition-points="689.3333333333334,230;938,230" d="M 689.3333333333334 230 L 938 230" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
         <g>
-          <rect x="612.9666666666667" y="210" width="401.4" height="18" rx="3" class="c-mask"/>
-          <text x="813.6666666666667" y="220" class="t-edge-emphasis" font-size="11" text-anchor="middle">GET /servicePrincipals/00000003-0000-0000-c000-000000000000</text>
+          <rect x="593.1666666666667" y="210" width="441" height="18" rx="3" class="c-mask"/>
+          <text x="813.6666666666667" y="220" class="t-edge-emphasis" font-size="11" text-anchor="middle">GET /servicePrincipals $filter=appId eq '00000003-…', first match</text>
         </g>
         </g>
 

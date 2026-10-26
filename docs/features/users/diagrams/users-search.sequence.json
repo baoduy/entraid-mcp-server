@@ -14,7 +14,7 @@
       "url": "https://github.com/baoduy/entraid-mcp-server.git",
       "provider": "github",
       "link_mode": "web",
-      "revision": "090ba698766d32978c02ca904712f9517e3b53f8"
+      "revision": "c4555959ab4766769df37a0fbac517c383df70f5"
     }
   },
   "participants": [
@@ -151,17 +151,6 @@
       "y": 456,
       "label": "Error searching users: <reason> + error result",
       "variant": "return"
-    }
-  ],
-  "cards": [
-    {
-      "dot": "amber",
-      "title": "Output schema",
-      "items": [
-        "The tool declares every user field a string",
-        "businessPhones is a list and empty fields are null",
-        "a client that validates output rejects the result"
-      ]
     }
   ]
 }
