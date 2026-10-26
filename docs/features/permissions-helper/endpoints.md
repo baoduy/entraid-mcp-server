@@ -342,5 +342,5 @@ Search Graph permissions by keyword.
 A failed call reaches the AI client twice: one error notification (`<message>: <reason>`, sent through the MCP log channel) and the error result `Error calling tool '<tool>': <reason>` with `isError: true`. The reason is the text of the exception Microsoft Graph, the SDK or the server raised. The server sets no timeout and no retry of its own and keeps no state between calls. Results that report a known case — `already_exists`, `not_found`, a dynamic group's `status: error`, the permission helper's `status: error` — are normal results, not errors.
 
 - `suggest_permissions_for_task` and `list_permission_categories_and_tasks` read a built-in table: 8 categories, 19 tasks; they never call Graph.
-- `get_all_graph_permissions` and `search_permissions` read the Microsoft Graph service principal by passing its application id as the object id — see ❓ Open questions in [index.md](index.md).
+- `get_all_graph_permissions` and `search_permissions` find Microsoft Graph's service principal with `$filter=appId eq '00000003-0000-0000-c000-000000000000'` and take the first match; when none matches, both return `status: error` with `Microsoft Graph service principal not found`.
 - `search_permissions` downloads the whole permission list on every call and filters it in the server.
