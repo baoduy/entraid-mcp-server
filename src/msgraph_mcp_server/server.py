@@ -92,7 +92,7 @@ def _reports_errors(
 @_reports_errors("Error searching users", auth_errors=True)
 async def search_users(
     query: str, ctx: Context, limit: int = 10
-) -> list[dict[str, str]]:
+) -> list[dict[str, Any]]:
     """Search for users by name or email.
 
     Args:
@@ -288,7 +288,7 @@ async def get_group_by_id(group_id: str, ctx: Context) -> dict[str, Any] | None:
 async def search_groups_by_name(
     name: str, ctx: Context, limit: int = 50
 ) -> list[dict[str, Any]]:
-    """Search for groups by display name (case-insensitive, partial match, with paging)."""
+    """Search for groups whose display name starts with the given text (case-insensitive, with paging)."""
     await ctx.info(f"Searching for groups with name matching '{name}'...")
     results = await groups.search_groups_by_name(graph_client, name, limit)
     await ctx.report_progress(progress=100, total=100)

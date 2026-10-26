@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 async def search_users(
     graph_client: GraphClient, query: str, limit: int = 10
-) -> list[dict[str, str]]:
+) -> list[dict[str, Any]]:
     """Search for users by name or email, with paging support."""
     client = graph_client.get_client()
     term = graph_search_escape(query)

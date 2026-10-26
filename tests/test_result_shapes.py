@@ -14,6 +14,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
+from conftest import MICROSOFT_GRAPH_APP_ID
 from msgraph.generated.models.app_role import AppRole
 from msgraph.generated.models.app_role_assignment import AppRoleAssignment
 from msgraph.generated.models.application import Application
@@ -77,7 +78,7 @@ AOIFE = "aoife@contoso.com"
 ALL_STAFF = "all-staff"
 PAYROLL_SYNC = "payroll-sync-object"
 PAYROLL_SYNC_SP = "payroll-sync-sp"
-MICROSOFT_GRAPH_APP_ID = "00000003-0000-0000-c000-000000000000"
+MICROSOFT_GRAPH_SP = "sp-msgraph-object"
 
 
 # -- tenant data ----------------------------------------------------------------------------
@@ -163,10 +164,10 @@ def payroll_sync_sp(graph):
 
 
 def microsoft_graph_permissions(graph):
-    graph.service_principals.by_service_principal_id(
-        MICROSOFT_GRAPH_APP_ID
-    ).value = ServicePrincipal(
-        id=MICROSOFT_GRAPH_APP_ID,
+    """Microsoft Graph's service principal: its object id differs from its app id, as in a tenant."""
+    sp = ServicePrincipal(
+        id=MICROSOFT_GRAPH_SP,
+        app_id=MICROSOFT_GRAPH_APP_ID,
         oauth2_permission_scopes=[
             PermissionScope(
                 value="User.Read",
@@ -186,6 +187,9 @@ def microsoft_graph_permissions(graph):
             )
         ],
     )
+    graph.service_principals.items = [sp]
+    graph.service_principals.by_service_principal_id(MICROSOFT_GRAPH_SP).value = sp
+    return sp
 
 
 def mfa_policy():

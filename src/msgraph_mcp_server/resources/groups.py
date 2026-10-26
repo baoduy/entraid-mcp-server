@@ -109,7 +109,7 @@ async def get_group_by_id(
 async def search_groups_by_name(
     graph_client: GraphClient, name: str, limit: int = 50
 ) -> list[dict[str, Any]]:
-    """Search for groups by display name (case-insensitive, partial match, with paging)."""
+    """Search for groups whose display name starts with the given text (case-insensitive, with paging)."""
     if limit <= 0:
         return []
     client = graph_client.get_client()
