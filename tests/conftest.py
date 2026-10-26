@@ -8,8 +8,9 @@ whose size follows ``$top`` (or the endpoint's default) and link them with
 ``odata_next_link``. Entities are real msgraph model objects.
 """
 
+import copy
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from datetime import datetime, timezone
 from types import SimpleNamespace
 from typing import Any
@@ -24,6 +25,9 @@ from msgraph.generated.models.user import User
 from msgraph_mcp_server import server
 
 GRAPH_ROOT = "https://graph.microsoft.com/v1.0"
+MICROSOFT_GRAPH_APP_ID = "00000003-0000-0000-c000-000000000000"
+# Model fields Graph sends whatever $select names.
+ALWAYS_SELECTED = {"backing_store", "additional_data", "id", "odata_type"}
 DEFAULT_PAGE_SIZE = 100
 CREATED = datetime(2026, 1, 15, 9, 30, tzinfo=timezone.utc)
 
@@ -43,6 +47,7 @@ class Request:
     top: int | None = None
     url: str | None = None
     body: Any = None
+    select: list[str] | None = None
 
 
 class Collection:
@@ -109,7 +114,17 @@ class Collection:
             self._entities[entity_id] = Entity(self._graph, f"{self.path}/{entity_id}")
         return self._entities[entity_id]
 
-    by_user_id = by_group_id = by_application_id = by_service_principal_id = by_id
+    def by_service_principal_id(self, sp_id: str) -> "Entity":
+        """Graph's object-id path: it never resolves an app id, Microsoft Graph's included."""
+        entity = self.by_id(sp_id)
+        if sp_id == MICROSOFT_GRAPH_APP_ID:
+            entity.error = GraphError(
+                f"Request_ResourceNotFound: Resource '{sp_id}' does not exist or one of "
+                "its queried reference-property objects are not present."
+            )
+        return entity
+
+    by_user_id = by_group_id = by_application_id = by_id
     by_directory_role_id = by_conditional_access_policy_id = by_managed_device_id = (
         by_id
     )
@@ -298,14 +313,24 @@ class Entity:
         )
 
     async def get(self, request_configuration=None):
-        self._graph.requests.append(Request("get", self.path))
+        query = getattr(request_configuration, "query_parameters", None)
+        select = getattr(query, "select", None)
+        self._graph.requests.append(Request("get", self.path, select=select))
         if self.error is not None:
             raise self.error
         if self.value is None:
             raise GraphError(
                 f"Request_ResourceNotFound: Resource '{self.path}' does not exist."
             )
-        return self.value
+        if not select:
+            return self.value
+        # Like Graph's $select: every property it does not name comes back null.
+        selected = {re.sub(r"[A-Z]", lambda c: "_" + c[0].lower(), s) for s in select}
+        answer = copy.copy(self.value)
+        for field in fields(answer):
+            if field.name not in selected | ALWAYS_SELECTED:
+                setattr(answer, field.name, None)
+        return answer
 
     async def patch(self, body):
         self._graph.requests.append(Request("patch", self.path, body=body))
