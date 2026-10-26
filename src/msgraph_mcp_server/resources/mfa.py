@@ -32,7 +32,7 @@ async def get_mfa_status(graph_client: GraphClient, user_id: str) -> dict[str, A
 
     # Get user's company name
     query_params = UserItemRequestBuilder.UserItemRequestBuilderGetQueryParameters(
-        select=["companyName"]
+        select=["companyName", "mail"]
     )
     request_configuration = RequestConfiguration(query_parameters=query_params)
     user = await client.users.by_user_id(user_id).get(

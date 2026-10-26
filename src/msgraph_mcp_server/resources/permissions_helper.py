@@ -2,6 +2,7 @@ import logging
 from typing import Any
 
 from ..utils.graph_client import GraphClient
+from .service_principals import get_service_principal_by_app_id
 
 logger = logging.getLogger(__name__)
 
@@ -200,12 +201,8 @@ async def get_all_graph_permissions(graph_client: GraphClient) -> dict[str, Any]
     Returns:
         A dictionary with all delegated and application permissions
     """
-    client = graph_client.get_client()
-
-    # Get the Microsoft Graph service principal
-    ms_graph_sp = await client.service_principals.by_service_principal_id(
-        MS_GRAPH_APP_ID
-    ).get()
+    # Get the Microsoft Graph service principal by its app id: its object id differs per tenant
+    ms_graph_sp = await get_service_principal_by_app_id(graph_client, MS_GRAPH_APP_ID)
 
     if not ms_graph_sp:
         logger.error("Microsoft Graph service principal not found")

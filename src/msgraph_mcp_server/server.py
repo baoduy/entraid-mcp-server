@@ -92,7 +92,7 @@ def _reports_errors(
 @_reports_errors("Error searching users", auth_errors=True)
 async def search_users(
     query: str, ctx: Context, limit: int = 10
-) -> list[dict[str, str]]:
+) -> list[dict[str, Any]]:
     """Search for users by name or email.
 
     Args:
