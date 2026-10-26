@@ -303,40 +303,44 @@ async def get_conditional_access_policies(
 ) -> list[dict[str, Any]]:
     """Get all conditional access policies with comprehensive details."""
     client = graph_client.get_client()
-    policies_response = await client.identity.conditional_access.policies.get()
+    response = await client.identity.conditional_access.policies.get()
+    raw_policies = []
+    if response and response.value:
+        raw_policies.extend(response.value)
+    while getattr(response, "odata_next_link", None):
+        response = await client.identity.conditional_access.policies.with_url(
+            response.odata_next_link
+        ).get()
+        if response and response.value:
+            raw_policies.extend(response.value)
     policies = []
-    if policies_response and policies_response.value:
-        for policy in policies_response.value:
-            # Parse conditions
-            conditions = await parse_conditions(
-                client, getattr(policy, "conditions", None)
-            )
-            # Parse grant controls
-            grant_controls = parse_grant_controls(
-                getattr(policy, "grant_controls", None)
-            )
-            # Parse session controls
-            session_controls = parse_session_controls(
-                getattr(policy, "session_controls", None)
-            )
-            # Compose policy data
-            policy_data = {
-                "id": getattr(policy, "id", None),
-                "displayName": getattr(policy, "display_name", None),
-                "state": getattr(policy, "state", None).value
-                if getattr(policy, "state", None)
-                else None,
-                "createdDateTime": policy.created_date_time.isoformat()
-                if getattr(policy, "created_date_time", None)
-                else None,
-                "modifiedDateTime": policy.modified_date_time.isoformat()
-                if getattr(policy, "modified_date_time", None)
-                else None,
-                **conditions,
-                **{f"Grant_{k}": v for k, v in grant_controls.items()},
-                **session_controls,
-            }
-            policies.append(policy_data)
+    for policy in raw_policies:
+        # Parse conditions
+        conditions = await parse_conditions(client, getattr(policy, "conditions", None))
+        # Parse grant controls
+        grant_controls = parse_grant_controls(getattr(policy, "grant_controls", None))
+        # Parse session controls
+        session_controls = parse_session_controls(
+            getattr(policy, "session_controls", None)
+        )
+        # Compose policy data
+        policy_data = {
+            "id": getattr(policy, "id", None),
+            "displayName": getattr(policy, "display_name", None),
+            "state": getattr(policy, "state", None).value
+            if getattr(policy, "state", None)
+            else None,
+            "createdDateTime": policy.created_date_time.isoformat()
+            if getattr(policy, "created_date_time", None)
+            else None,
+            "modifiedDateTime": policy.modified_date_time.isoformat()
+            if getattr(policy, "modified_date_time", None)
+            else None,
+            **conditions,
+            **{f"Grant_{k}": v for k, v in grant_controls.items()},
+            **session_controls,
+        }
+        policies.append(policy_data)
     return policies
 
 

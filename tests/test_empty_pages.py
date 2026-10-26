@@ -75,3 +75,22 @@ async def test_a_limit_of_1_returns_one_item(graph, ctx, tool, tenant_has):
     result = await tool(ctx, 1)
 
     assert len(result) == 1
+
+
+async def test_a_policy_list_stops_at_a_next_page_with_no_body(graph, ctx):
+    # Imported here: that module imports ``Pages`` from this one.
+    from test_conditional_access_paging import policies as make_policies
+
+    first, second = make_policies("policy-1", "policy-2")
+    policies = graph.identity.conditional_access.policies
+    policies.items = [first, second]
+    policies.page_size = 1
+
+    async def no_body(request_configuration=None):
+        return None
+
+    policies.with_url = lambda url: SimpleNamespace(get=no_body)
+
+    result = await server.get_conditional_access_policies(ctx)
+
+    assert [p["id"] for p in result] == ["policy-1"]
