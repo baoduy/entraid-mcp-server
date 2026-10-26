@@ -57,9 +57,9 @@ Captured by running the server's real MCP handler against the test suite's in-me
 
 ## 🔄 End-to-end flow
 
-![An AI client calls get_conditional_access_policies; the module reads the first page of policies, reads each included or excluded group's name, and returns flat rows of conditions, grant and session controls.](diagrams/conditional-access-list.svg)
+![An AI client calls get_conditional_access_policies; the module reads every page of policies, following nextLink, reads each included or excluded group's name, and returns flat rows of conditions, grant and session controls.](diagrams/conditional-access-list.svg)
 
-`get_conditional_access_policies` stands for the feature. Nothing is stored. Only the first page of policies is read. Each group named in a policy costs one more Graph call; a group that cannot be read is named `Unknown Group (<id>)` and the policy is still returned.
+`get_conditional_access_policies` stands for the feature. Nothing is stored. Every page of policies is read, following `@odata.nextLink`. Each group named in a policy costs one more Graph call; a group that cannot be read is named `Unknown Group (<id>)` and the policy is still returned.
 
 ## 📚 Pages
 
@@ -70,9 +70,3 @@ Captured by running the server's real MCP handler against the test suite's in-me
 
 - [Groups](../groups/index.md) — reach for it to read a group a policy includes or excludes.
 - [MFA](../mfa/index.md) — reach for it to check whether users can satisfy a policy that requires MFA.
-
-## ❓ Open questions
-
-| Question | Why it matters | Checked | Who can answer |
-|---|---|---|---|
-| Should `get_conditional_access_policies` read every page of policies? | A tenant with more policies than Graph puts on one page gets a partial list without being told. | `get_conditional_access_policies` makes one `GET` and does not follow `@odata.nextLink`; Graph's page size for this list is not in the repo. | Maintainer (baoduy) |

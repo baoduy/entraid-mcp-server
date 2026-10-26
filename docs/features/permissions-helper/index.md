@@ -69,9 +69,3 @@ Captured by running the server's real MCP handler against the test suite's in-me
 
 - [Applications](../applications/index.md) — reach for it to set `requiredResourceAccess` on an app registration once you know the permission.
 - [Service principals](../service-principals/index.md) — reach for it to see the permissions an app already holds.
-
-## ❓ Open questions
-
-| Question | Why it matters | Checked | Who can answer |
-|---|---|---|---|
-| Does `GET /servicePrincipals/00000003-0000-0000-c000-000000000000` resolve in a real tenant? | `get_all_graph_permissions` and `search_permissions` pass Microsoft Graph's application id where Graph expects the service principal's object id; if Graph answers 404, both tools always fail. | `permissions_helper.get_all_graph_permissions` calls `by_service_principal_id(MS_GRAPH_APP_ID)`, while `service_principals.get_service_principal_by_app_id` finds a service principal with `$filter=appId eq …`. The test suite's Graph accepts any id. | Maintainer (baoduy), by a run against a tenant |

@@ -125,10 +125,8 @@ Releases are automatic: there is no publish command to run. A pull request to `d
 
 ## ⚠️ Known limitations
 
-- `search_users` declares every user field a string, but `businessPhones` is a list and empty fields are `null`. A client that validates a tool's structured output rejects any result holding a user ([Users](https://github.com/baoduy/entraid-mcp-server/blob/main/docs/features/users/index.md)).
 - The device tools use the Microsoft Graph **beta** endpoint, which Microsoft can change without notice.
 - The server sets no timeout or retry of its own; a slow or failing Graph call ends the tool call with an error result.
-- `get_conditional_access_policies` reads the first page of policies only.
 - `search_groups_by_name` matches the start of the display name, not any part of it.
 - `create_group` is several Graph calls with no rollback: if an owner or member add fails, the group stays created.
 - `reset_user_password_direct` returns a generated password in its result, so it reaches the AI client's conversation.

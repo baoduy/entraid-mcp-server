@@ -61,7 +61,7 @@ Captured by running the server's real MCP handler against the test suite's in-me
 
 ## 🔄 End-to-end flow
 
-![An AI client calls get_group_mfa_status; the module reads every page of group members, keeps users, then for each user reads companyName and the authentication methods, counts unreadable members, and returns the statuses with one count warning when some could not be read.](diagrams/mfa-group.svg)
+![An AI client calls get_group_mfa_status; the module reads every page of group members, keeps users, then for each user reads companyName and mail and the authentication methods, counts unreadable members, and returns the statuses with one count warning when some could not be read.](diagrams/mfa-group.svg)
 
 `get_group_mfa_status` stands for the feature. Nothing is stored. Members are read page by page, then two Graph calls per user run one after another, so a large group takes a while. A failed member lookup is logged and counted; the report still returns the members that could be read. `userPrincipalName` in each status is the id that was looked up, not a value from Graph.
 
@@ -74,9 +74,3 @@ Captured by running the server's real MCP handler against the test suite's in-me
 
 - [Groups](../groups/index.md) — reach for it to find the group or its members.
 - [Password management](../password-management/index.md) — reach for it to list a user's password methods or reset the password.
-
-## ❓ Open questions
-
-| Question | Why it matters | Checked | Who can answer |
-|---|---|---|---|
-| Does Microsoft Graph return `mail` when the user read selects only `companyName`? | If not, `mail` is always `null` in MFA results. | `mfa.get_mfa_status` sends `$select=companyName` and then reads `mail`; the test suite's Graph ignores `$select`, so the captured example shows `mail` filled. | Maintainer (baoduy), by a run against a tenant |
