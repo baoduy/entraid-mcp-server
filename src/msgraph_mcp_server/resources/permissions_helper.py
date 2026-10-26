@@ -291,9 +291,11 @@ async def search_permissions(
         for permission in delegated_permissions:
             # Search in value, display name, and description
             if (
-                search_term in permission.get("value", "").lower()
-                or search_term in permission.get("adminConsentDisplayName", "").lower()
-                or search_term in permission.get("adminConsentDescription", "").lower()
+                search_term in (permission.get("value") or "").lower()
+                or search_term
+                in (permission.get("adminConsentDisplayName") or "").lower()
+                or search_term
+                in (permission.get("adminConsentDescription") or "").lower()
             ):
                 matching_delegated.append(permission)
 
@@ -302,9 +304,9 @@ async def search_permissions(
         for permission in application_permissions:
             # Search in value, display name, and description
             if (
-                search_term in permission.get("value", "").lower()
-                or search_term in permission.get("displayName", "").lower()
-                or search_term in permission.get("description", "").lower()
+                search_term in (permission.get("value") or "").lower()
+                or search_term in (permission.get("displayName") or "").lower()
+                or search_term in (permission.get("description") or "").lower()
             ):
                 matching_application.append(permission)
 
